@@ -1,9 +1,9 @@
 /* http://www.menucool.com */
 
-#sliderFrame {position:relative;width:800px;margin: 0 auto;} /*remove the "margin:0 auto;" if you want to align the whole slider to the left side*/
+#sliderFrame {position:relative;width:700px;margin: 0 auto;} /*remove the "margin:0 auto;" if you want to align the whole slider to the left side*/
         
 #slider {
-    width:800px;height:490px;/* Make it the same size as your images */
+    width:700px;height:490px;/* Make it the same size as your images */
 	background:#fff url(loading.gif) no-repeat 50% 50%;
 	position:relative;
 	margin:0 auto;/*make the image slider center-aligned */
@@ -61,7 +61,7 @@ div.mc-caption a:hover {
 
 /* ------ built-in navigation bullets wrapper ------*/
 div.navBulletsWrapper  {
-	top:320px;/* Its position is relative to the #slider */
+	top:520px;/* Its position is relative to the #slider */
 	margin:0 auto;
 	text-align:center;
 	background:none;
