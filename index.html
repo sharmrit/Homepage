@@ -11,7 +11,16 @@
   ga('send', 'pageview');
 
 </script>	  
-	  
+<script>
+
+function counter(){
+var counterdate=new Date()
+var currenthits=counterdate.getTime().toString()
+currenthits=parseInt(currenthits.substring(8,currenthits.length-4))+1
+document.write("Total Visits: <b>"+currenthits+"</b>!")
+
+}
+</script>	  
  
     <meta charset="utf-8">
     <title>Ritesh Sharma</title>
@@ -345,7 +354,7 @@ MTH 552 Numerical Solution of Ordinary Differential Equations<br>
 <li><p align="justify">Wrote poems for the school magazine and the poem named A Land called India was published in the Hindustan Times(one of the leading newspaper in India).</p></li>
 <li><p align="justify">Participated in two day workshop on "ASTRONOMY FOR ENGINEERS" conducted by Department of Engineering Sciences and Humanities, Siliguri Institute of Technology.</p></li>
 </ul>
-
+	<br/><script>counter()</script><br/>
 <hr>
 <center><h6>&copy;&nbsp;Ritesh Sharma</h6></center>
 </div>
