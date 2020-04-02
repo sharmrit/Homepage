@@ -60,50 +60,10 @@
 <script src="https://cdn.jsdelivr.net/npm/polygon-clipping@0.14.3/dist/polygon-clipping.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vsup@latest"></script>
 <script src="./colour.js"></script>
+<script src="https://unpkg.com/d3-scale-cluster@1.3.1/dist/d3-scale-cluster.min.js"></script>
 </head>
 <body>
 <!-- Create an element where the map will take place -->
-
-
-<div class="container" >
-    <div class="container-narrow">   
-        <div class="masthead">
-            <h3>Multihazard Risk Visualization</h3>
-          </div>
-    
-          <hr> 
-        <div class="span8">
-            <div id="mapid"></div>
-        </div>
-        <div class="span3">
-            <div>
-                <p> Color Scheme</p>     
-                <input type="radio" name="color_scale" value="cb" onclick="displayColor()">Color Brewer Scale <br>
-                <input type="radio" name="color_scale" value="cp"  onclick="displayColor()">Chloropleth Color Scale <br> 
-                <input type="radio" name="color_scale" value="gs"  onclick="displayColor()">Gradient Color Scale <br>  
-                <input type="radio" name="color_scale" value="hs"  onclick="displayColor()">Hue Scale <br> 
-                <div class="slidercontainer">
-                    <input type="range" min="1" max="100" value="1" class="slider" id="myRange1">
-                    <p>Min: <span id="demo1"></span></p>
-                    <input type="range" min="1" max="100" value="100" class="slider" id="myRange2">
-                    <p>Max: <span id="demo2"></span></p>
-                </div>
-            </div> 
-            <br>
-            <br>
-            <div>
-                <p> Natural Hazards</p>
-                <input type="checkbox" class="checks" value=1>Fire<br>
-                <input type="checkbox" class="checks" value=2>Earthquake<br> <br>                   
-                <button type="button" class="btn btn-primary" onclick="displayMap()">  Submit  </button> <br>  
-            </div>              
-        </div>
-    </div>
-</div>
-   
- 
-
-
 
 
 <style>
@@ -129,8 +89,68 @@
 }
 </style>
 
+<div class="container" >
+    <div class="container-narrow">   
+        <div class="masthead">
+            <h3>Multihazard Risk Visualization</h3>
+          </div>
+    
+          <hr> 
+        <div class="span8">
+            <div id="mapid"></div>
+        </div>
+        <div class="span3">
+            <div >
+                <h2> Color Schemes</h2>    
+                <div style="outline: 1px solid black;"> 
+                <input type="radio" name="color_scale" value="cb" onclick="displayColor()">Color Brewer Scale <br>
+                <input type="radio" name="color_scale" value="cp"  onclick="displayColor()">Chloropleth Color Scale <br> 
+                <div class="slidercontainer" style="outline: 1px  black;">
+                <input type="range" min="1" max="100" value="50" class="slider" id="divide_data">
+                <p>Min: <span id="dd"></span></p>
+                </div>
+            </div> <br> 
+                <input type="radio" name="color_scale" value="cl"  onclick="displayColor()">Cluster based Chloropleth Scale <br> <br>
+
+                <input type="radio" name="color_scale" value="gs"  onclick="displayColor()">Gradient Color Scale <br> <br>  
+               
+                <div class="slidercontainer" style="outline: 1px solid black;">
+                    <input type="radio" name="color_scale" value="hs"  onclick="displayColor()">Hue Scale <br> 
+                    <input type="range" min="1" max="100" value="1" class="slider" id="myRange1">
+                    <p>Min: <span id="demo1"></span></p>
+                    <input type="range" min="1" max="100" value="100" class="slider" id="myRange2">
+                    <p>Max: <span id="demo2"></span></p>
+                </div>
+            </div> 
+            <br>
+            <br>
+            <div style="outline: 1px  black;">
+                <h2> Natural Hazards</h2>
+                <input type="checkbox" class="checks" value=1>Fire<br>
+                <input type="checkbox" class="checks" value=2>Earthquake<br> <br>                   
+                <button type="button" class="btn btn-primary" onclick="displayMap()">  Submit  </button> <br>  
+            </div>              
+        </div>
+    </div>
+</div>
+   
+ 
+
+
+
+
+
 <script>
     
+
+var slider_divide = document.getElementById("divide_data");
+var output_divide = document.getElementById("dd");
+
+var div_data=0.5;
+slider_divide.oninput = function() {
+    div_data = slider_divide.value/100;
+    output_divide.innerHTML = slider_divide.value/100;
+}  
 
 var slider_min = document.getElementById("myRange1");
 var output_min = document.getElementById("demo1");
@@ -194,11 +214,14 @@ var color_brewer =['#feebe2','#fcc5c0','#fa9fb5','#f768a1','#c51b8a','#7a0177'];
 var cp_colors=["#FEB24C","#FD8D3C", "#FC4E2A","#E31A1C","#BD0026","#800026"];
 var orangeRedTruncate=["#fdb07a","#fa8e5d","#e04530","#c81d13","#a70403","#7f0000"];   
 
+//var cp_colors=[rgbToHex(158,202,225),rgbToHex(107,174,214), rgbToHex(66,146,198),rgbToHex(33,113,181),rgbToHex(8,81,156),rgbToHex(8,48,107)];
+
+
+
+
 
 function interpolateHue(t)
 {
-    //t=0.5+t/2;
-    t=min_hue+(max_hue-min_hue)*t;
     var c1_h =(1-t)*240.0;
         var c1_s =1.0;
         var c1_v=1.0;
@@ -236,31 +259,133 @@ function interpolateHue(t)
         return rgbToHex(c2_r,c2_g,c2_b);
 }
 
-function get_region_color(max,min,num,val){      
+
+function get_region_color(averages,max,min,num,val){      
 
     if(chosen_scale==="cb")
     {
           var len=color_brewer.length;
-          var new_val = Math.ceil (len*((val-min)/(max-min))); 
-          if(new_val==0)
-         {
-             new_val=1;
-         } 
-          return color_brewer[new_val-1];
+          var new_id=0; 
+          if(div_data!=0.5)
+          {
+                var fc=0; //number of data in first half
+                var lc=0; //number of data in second half
+                var new_val=((val-min)/(max-min)); 
+                for(i=0;i<averages.length;i++)
+                {
+                    var scaled_val=((averages[i]-min)/(max-min)); 
+                    if(scaled_val<div_data)
+                    {
+                            fc++; 
+                    }
+                    else
+                    {
+                            lc++;
+                    }
+                }
+                var fh_ids= Math.ceil(color_brewer.length*(fc/averages.length));
+                var lh_ids= color_brewer.length-fh_ids;
+
+              if(new_val<div_data)
+              {
+                 new_id=Math.ceil (fh_ids*((val-min)/(max-min))); 
+              }
+              else
+              {
+                new_id=fh_ids+Math.ceil (fh_ids*((val-min)/(max-min))); 
+              }
+
+
+              if(new_id==0)
+              {
+                    new_id=1;
+              } 
+              else if(new_id>=color_brewer.length)
+              {
+                  new_id=color_brewer.length-1
+              }
+          }
+          else
+          {
+            var len=cp_colors.length;
+            var new_id = Math.ceil (len*((val-min)/(max-min))); 
+            if(new_id==0)
+            {
+                new_id=1;
+            } 
+          }
+
+          return color_brewer[new_id-1];
     }
     else if(chosen_scale==="cp")
     {      
+
         var len=cp_colors.length;
-        var new_val = Math.ceil (len*((val-min)/(max-min))); 
-        if(new_val==0)
-        {
-          new_val=1;
-        } 
-        return cp_colors[new_val-1];
+          var new_id=0; 
+          if(div_data!=0.5)
+          {
+                var fc=0; //number of data in first half
+                var lc=0; //number of data in second half
+                var new_val=((val-min)/(max-min)); 
+                for(i=0;i<averages.length;i++)
+                {
+                    var scaled_val=((averages[i]-min)/(max-min)); 
+                    if(scaled_val<div_data)
+                    {
+                            fc++; 
+                    }
+                    else
+                    {
+                            lc++;
+                    }
+                }
+                var fh_ids= Math.ceil(cp_colors.length*(fc/averages.length));
+                var lh_ids= cp_colors.length-fh_ids;
+
+              if(new_val<div_data)
+              {
+                 new_id=Math.ceil (fh_ids*((val-min)/(max-min))); 
+              }
+              else
+              {
+                new_id=fh_ids+Math.ceil (fh_ids*((val-min)/(max-min))); 
+              }
+
+
+              if(new_id==0)
+              {
+                    new_id=1;
+              } 
+              else if(new_id>=cp_colors.length)
+              {
+                  new_id=cp_colors.length-1
+              }
+          }
+          else
+          {
+            var len=cp_colors.length;
+            var new_id = Math.ceil (len*((val-min)/(max-min))); 
+            if(new_id==0)
+            {
+                new_id=1;
+            } 
+          }
+
+          return cp_colors[new_id-1];
+
+        // var len=cp_colors.length;
+        // var new_val = Math.ceil (len*((val-min)/(max-min))); 
+        // if(new_val==0)
+        // {
+        //   new_val=1;
+        // } 
+        // return cp_colors[new_val-1];
 
     }
     else if(chosen_scale==="gs")
     {     
+
+
       var len =orangeRedTruncate.length;
       var new_val = Math.ceil (len*((val-min)/(max-min))); 
       if(new_val==0)
@@ -272,7 +397,23 @@ function get_region_color(max,min,num,val){
     else if(chosen_scale==="hs")
     {
         var t = (val-min)/(max-min);
+        t=min_hue+(max_hue-min_hue)*t;
         return interpolateHue(t); 
+    }
+    else if(chosen_scale==="cl")
+    {
+        var values=new Array(averages.length);
+        for(i=0;i<averages.length;i++)
+        {
+            values[i]=averages[i];
+        }
+        var range= new Array(cp_colors.length)
+        for(i=0;i<cp_colors.length;i++)
+        {
+            range[i]=cp_colors[i];
+        }
+        var scale = d3.scaleCluster().domain(values).range(range);
+        return scale(val); 
     }
     
 }
@@ -351,263 +492,263 @@ function draw_map(data_types,chosen_scale)
         }
         for (i=0; i <np; i++)
         {           
-            if(parseInt(data[i].cluster_30)==1)
+            if(parseInt(data[i].cluster_30)===1)
             {
                 r1[count[0]]=new Array(2);
                 r1[count[0]][0]=parseFloat(data[i].latitude);
                 r1[count[0]][1]=parseFloat(data[i].longitude);
-                sum[0] = sum[0]+100*(parseFloat(data[i].cluster_30_rating));
-                count[0]=count[0]+1; 
+                sum[0] = (parseFloat(data[i].cluster_30_rating));
+                count[0]+=1;
             }
-            if(parseInt(data[i].cluster_30)==2)
+            if(parseInt(data[i].cluster_30)===2)
             {
                 r2[count[1]]=new Array(2);
                 r2[count[1]][0]=parseFloat(data[i].latitude);
                 r2[count[1]][1]=parseFloat(data[i].longitude);
-                sum[1] = sum[1]+100*(parseFloat(data[i].cluster_30_rating));
-                count[1]=count[1]+1;
+                sum[1] = (parseFloat(data[i].cluster_30_rating));
+                count[1]+=1;
             }
-            if(parseInt(data[i].cluster_30)==3)
+            if(parseInt(data[i].cluster_30)===3)
             {
                 
                 r3[count[2]]=new Array(2);
                 r3[count[2]][0]=parseFloat(data[i].latitude);
                 r3[count[2]][1]=parseFloat(data[i].longitude);
-                sum[2] = sum[2]+100*(parseFloat(data[i].cluster_30_rating));
-                count[2]=count[2]+1;
+                sum[2] = (parseFloat(data[i].cluster_30_rating));
+                count[2]+=1;
             }
-            if(parseInt(data[i].cluster_30)==4)
+            if(parseInt(data[i].cluster_30)===4)
             {
                 
                 r4[count[3]]=new Array(2);
                 r4[count[3]][0]=parseFloat(data[i].latitude);
                 r4[count[3]][1]=parseFloat(data[i].longitude);
-                sum[3] = sum[3]+100*(parseFloat(data[i].cluster_30_rating));
-                count[3]=count[3]+1;
+                sum[3] = (parseFloat(data[i].cluster_30_rating));
+                count[3]+=1;
             }
-            if(parseInt(data[i].cluster_30)==5)
+            if(parseInt(data[i].cluster_30)===5)
             {
                 
                 r5[count[4]]=new Array(2);
                 r5[count[4]][0]=parseFloat(data[i].latitude);
                 r5[count[4]][1]=parseFloat(data[i].longitude);
-                sum[4] = sum[4]+100*(parseFloat(data[i].cluster_30_rating));
-                count[4]=count[4]+1;
+                sum[4] = (parseFloat(data[i].cluster_30_rating));
+                count[4]+=1;
             }
-            if(parseInt(data[i].cluster_30)==6)
+            if(parseInt(data[i].cluster_30)===6)
             {
                 
                 r6[count[5]]=new Array(2);
                 r6[count[5]][0]=parseFloat(data[i].latitude);
                 r6[count[5]][1]=parseFloat(data[i].longitude);
-                sum[5] = sum[5]+100*(parseFloat(data[i].cluster_30_rating));
-                count[5]=count[5]+1;
+                sum[5] = (parseFloat(data[i].cluster_30_rating));
+                count[5]+=1;
             }
-            if(parseInt(data[i].cluster_30)==7)
+            if(parseInt(data[i].cluster_30)===7)
             {
                 
                 r7[count[6]]=new Array(2);
                 r7[count[6]][0]=parseFloat(data[i].latitude);
                 r7[count[6]][1]=parseFloat(data[i].longitude);
-                sum[6] = sum[6]+100*(parseFloat(data[i].cluster_30_rating));
-                count[6]=count[6]+1;
+                sum[6] = (parseFloat(data[i].cluster_30_rating));
+                count[6]+=1;
             }
-            if(parseInt(data[i].cluster_30)==8)
+            if(parseInt(data[i].cluster_30)===8)
             {
                 
                 r8[count[7]]=new Array(2);
                 r8[count[7]][0]=parseFloat(data[i].latitude);
                 r8[count[7]][1]=parseFloat(data[i].longitude);
-                sum[7] = sum[7]+100*(parseFloat(data[i].cluster_30_rating));
-                count[7]=count[7]+1;
+                sum[7] = (parseFloat(data[i].cluster_30_rating));
+                count[7]+=1;
             }
-            if(parseInt(data[i].cluster_30)==9)
+            if(parseInt(data[i].cluster_30)===9)
             {
                 
                 r9[count[8]]=new Array(2);
                 r9[count[8]][0]=parseFloat(data[i].latitude);
                 r9[count[8]][1]=parseFloat(data[i].longitude);
-                sum[8] = sum[8]+100*(parseFloat(data[i].cluster_30_rating));
-                count[8]=count[8]+1;
+                sum[8] = (parseFloat(data[i].cluster_30_rating));
+                count[8]+=1;
             }
-            if(parseInt(data[i].cluster_30)==10)
+            if(parseInt(data[i].cluster_30)===10)
             {
                 
                 r10[count[9]]=new Array(2);
                 r10[count[9]][0]=parseFloat(data[i].latitude);
                 r10[count[9]][1]=parseFloat(data[i].longitude);
-                sum[9] = sum[9]+100*(parseFloat(data[i].cluster_30_rating));
-                count[9]=count[9]+1;
+                sum[9] = (parseFloat(data[i].cluster_30_rating));
+                count[9]+=1;
             }
-            if(parseInt(data[i].cluster_30)==11)
+            if(parseInt(data[i].cluster_30)===11)
             {
                 
                 r11[count[10]]=new Array(2);
                 r11[count[10]][0]=parseFloat(data[i].latitude);
                 r11[count[10]][1]=parseFloat(data[i].longitude);
-               sum[10] = sum[10]+100*(parseFloat(data[i].cluster_30_rating));
-               count[10]=count[10]+1;
+               sum[10] = (parseFloat(data[i].cluster_30_rating));
+               count[10]+=1;
             }
-            if(parseInt(data[i].cluster_30)==12)
+            if(parseInt(data[i].cluster_30)===12)
             {
                 
                 r12[count[11]]=new Array(2);
                 r12[count[11]][0]=parseFloat(data[i].latitude);
                 r12[count[11]][1]=parseFloat(data[i].longitude);
-                sum[11] = sum[11]+100*(parseFloat(data[i].cluster_30_rating));
-                count[11]=count[11]+1;
+                sum[11] = (parseFloat(data[i].cluster_30_rating));
+                count[11]+=1;
             }
-            if(parseInt(data[i].cluster_30)==13)
+            if(parseInt(data[i].cluster_30)===13)
             {
                 
                 r13[count[12]]=new Array(2);
                 r13[count[12]][0]=parseFloat(data[i].latitude);
                 r13[count[12]][1]=parseFloat(data[i].longitude);
-                sum[12] = sum[12]+100*(parseFloat(data[i].cluster_30_rating));
-                count[12]=count[12]+1;
+                sum[12] = (parseFloat(data[i].cluster_30_rating));
+                count[12]+=1;
             }
-            if(parseInt(data[i].cluster_30)==14)
+            if(parseInt(data[i].cluster_30)===14)
             {
                 
                 r14[count[13]]=new Array(2);
                 r14[count[13]][0]=parseFloat(data[i].latitude);
                 r14[count[13]][1]=parseFloat(data[i].longitude);
-                sum[13] = sum[13]+100*(parseFloat(data[i].cluster_30_rating));
-                count[13]=count[13]+1;
+                sum[13] = (parseFloat(data[i].cluster_30_rating));
+                count[13]+=1;;
             }
-            if(parseInt(data[i].cluster_30)==15)
+            if(parseInt(data[i].cluster_30)===15)
             {
                 
                 r15[count[14]]=new Array(2);
                 r15[count[14]][0]=parseFloat(data[i].latitude);
                 r15[count[14]][1]=parseFloat(data[i].longitude);
-                sum[14] = sum[14]+100*(parseFloat(data[i].cluster_30_rating));
-                count[14]=count[14]+1;
+                sum[14] = (parseFloat(data[i].cluster_30_rating));
+                count[14]+=1;;
             }
-            if(parseInt(data[i].cluster_30)==16)
+            if(parseInt(data[i].cluster_30)===16)
             {
                 r16[count[15]]=new Array(2);
                 r16[count[15]][0]=parseFloat(data[i].latitude);
                 r16[count[15]][1]=parseFloat(data[i].longitude);
-                sum[15] = sum[15]+100*(parseFloat(data[i].cluster_30_rating));
-                count[15]=count[15]+1; 
+                sum[15] = (parseFloat(data[i].cluster_30_rating));
+                count[15]+=1;; 
             }
-            if(parseInt(data[i].cluster_30)==17)
+            if(parseInt(data[i].cluster_30)===17)
             {
                 r17[count[16]]=new Array(2);
                 r17[count[16]][0]=parseFloat(data[i].latitude);
                 r17[count[16]][1]=parseFloat(data[i].longitude);
-                sum[16] = sum[16]+100*(parseFloat(data[i].cluster_30_rating));
-                count[16]=count[16]+1;
+                sum[16] =(parseFloat(data[i].cluster_30_rating));
+                count[16]+=1;;
             }
-            if(parseInt(data[i].cluster_30)==18)
+            if(parseInt(data[i].cluster_30)===18)
             {
                 
                 r18[count[17]]=new Array(2);
                 r18[count[17]][0]=parseFloat(data[i].latitude);
                 r18[count[17]][1]=parseFloat(data[i].longitude);
-                sum[17] = sum[17]+100*(parseFloat(data[i].cluster_30_rating));
-                count[17]=count[17]+1;
+                sum[17] = (parseFloat(data[i].cluster_30_rating));
+                count[17]+=1;;
             }
-            if(parseInt(data[i].cluster_30)==19)
+            if(parseInt(data[i].cluster_30)===19)
             {
                 
                 r19[count[18]]=new Array(2);
                 r19[count[18]][0]=parseFloat(data[i].latitude);
                 r19[count[18]][1]=parseFloat(data[i].longitude);
-                sum[18] = sum[18]+100*(parseFloat(data[i].cluster_30_rating));
-                count[18]=count[18]+1;
+                sum[18] = (parseFloat(data[i].cluster_30_rating));
+                count[18]+=1;
             }
-            if(parseInt(data[i].cluster_30)==20)
+            if(parseInt(data[i].cluster_30)===20)
             {
                 
                 r20[count[19]]=new Array(2);
                 r20[count[19]][0]=parseFloat(data[i].latitude);
                 r20[count[19]][1]=parseFloat(data[i].longitude);
-                sum[19] = sum[19]+100*(parseFloat(data[i].cluster_30_rating));
-                count[19]=count[19]+1;
+                sum[19] = (parseFloat(data[i].cluster_30_rating));
+                count[19]+=1;
             }
-            if(parseInt(data[i].cluster_30)==21)
+            if(parseInt(data[i].cluster_30)===21)
             {
                 
                 r21[count[20]]=new Array(2);
                 r21[count[20]][0]=parseFloat(data[i].latitude);
                 r21[count[20]][1]=parseFloat(data[i].longitude);
-                sum[20] = sum[20]+100*(parseFloat(data[i].cluster_30_rating));
-                count[20]=count[20]+1;
+                sum[20] = (parseFloat(data[i].cluster_30_rating));
+                count[20]+=1;
             }
-            if(parseInt(data[i].cluster_30)==22)
+            if(parseInt(data[i].cluster_30)===22)
             {                   
                 r22[count[21]]=new Array(2);
                 r22[count[21]][0]=parseFloat(data[i].latitude);
                 r22[count[21]][1]=parseFloat(data[i].longitude);
-                sum[21] = sum[21]+100*(parseFloat(data[i].cluster_30_rating));
-                count[21]=count[21]+1;
+                sum[21] =(parseFloat(data[i].cluster_30_rating));
+                count[21]+=1;
             }
-            if(parseInt(data[i].cluster_30)==23)
+            if(parseInt(data[i].cluster_30)===23)
             {               
                 r23[count[22]]=new Array(2);
                 r23[count[22]][0]=parseFloat(data[i].latitude);
                 r23[count[22]][1]=parseFloat(data[i].longitude);
-                sum[22] = sum[22]+100*(parseFloat(data[i].cluster_30_rating));
-                count[22]=count[22]+1;
+                sum[22] = (parseFloat(data[i].cluster_30_rating));
+                count[22]+=1;
             }
-            if(parseInt(data[i].cluster_30)==24)
+            if(parseInt(data[i].cluster_30)===24)
             {               
                 r24[count[23]]=new Array(2);
                 r24[count[23]][0]=parseFloat(data[i].latitude);
                 r24[count[23]][1]=parseFloat(data[i].longitude);
-                sum[23] = sum[23]+100*(parseFloat(data[i].cluster_30_rating));
-                count[23]=count[23]+1;
+                sum[23] = (parseFloat(data[i].cluster_30_rating));
+                count[23]+=1;
             }
-            if(parseInt(data[i].cluster_30)==25)
+            if(parseInt(data[i].cluster_30)===25)
             {               
                 r25[count[24]]=new Array(2);
                 r25[count[24]][0]=parseFloat(data[i].latitude);
                 r25[count[24]][1]=parseFloat(data[i].longitude);
-                sum[24] = sum[24]+100*(parseFloat(data[i].cluster_30_rating));
-                count[24]=count[24]+1;
+                sum[24] =(parseFloat(data[i].cluster_30_rating));
+                count[24]+=1;
             }
-            if(parseInt(data[i].cluster_30)==26)
+            if(parseInt(data[i].cluster_30)===26)
             {               
                 r26[count[25]]=new Array(2);
                 r26[count[25]][0]=parseFloat(data[i].latitude);
                 r26[count[25]][1]=parseFloat(data[i].longitude);
-                sum[25] = sum[25]+100*(parseFloat(data[i].cluster_30_rating));
-                count[25]=count[25]+1;
+                sum[25] = (parseFloat(data[i].cluster_30_rating));
+                count[25]+=1;
             }
-            if(parseInt(data[i].cluster_30)==27)
+            if(parseInt(data[i].cluster_30)===27)
             {               
                 r27[count[26]]=new Array(2);
                 r27[count[26]][0]=parseFloat(data[i].latitude);
                 r27[count[26]][1]=parseFloat(data[i].longitude);
-                sum[26] = sum[26]+100*(parseFloat(data[i].cluster_30_rating));
-                count[26]=count[26]+1;
+                sum[26] = (parseFloat(data[i].cluster_30_rating));
+                count[26]+=1;
             }
-            if(parseInt(data[i].cluster_30)==28)
+            if(parseInt(data[i].cluster_30)===28)
             {               
                 r28[count[27]]=new Array(2);
                 r28[count[27]][0]=parseFloat(data[i].latitude);
                 r28[count[27]][1]=parseFloat(data[i].longitude);
-                sum[27] = sum[27]+100*(parseFloat(data[i].cluster_30_rating));
-                count[27]=count[27]+1;
+                sum[27] = (parseFloat(data[i].cluster_30_rating));
+                count[27]+=1;
             }
-            if(parseInt(data[i].cluster_30)==29)
+            if(parseInt(data[i].cluster_30)===29)
             {               
                 r29[count[28]]=new Array(2);
                 r29[count[28]][0]=parseFloat(data[i].latitude);
                 r29[count[28]][1]=parseFloat(data[i].longitude);
-                sum[28] = sum[28]+100*(parseFloat(data[i].cluster_30_rating));
-                count[28]=count[28]+1;
+                sum[28] = (parseFloat(data[i].cluster_30_rating));
+                count[28]+=1;
             }
-            if(parseInt(data[i].cluster_30)==30)
+            if(parseInt(data[i].cluster_30)===30)
             {
                 
                 r30[count[29]]=new Array(2);
                 r30[count[29]][0]=parseFloat(data[i].latitude);
                 r30[count[29]][1]=parseFloat(data[i].longitude);
-                sum[29] = sum[29]+100*(parseFloat(data[i].cluster_30_rating));
-                count[29]=count[29]+1;
+                sum[29] = (parseFloat(data[i].cluster_30_rating));
+                count[29]+=1;
             }
         }
 
@@ -620,8 +761,8 @@ function draw_map(data_types,chosen_scale)
         {
             if(sum[i]>0)
             {
-                averages[i]=sum[i]/count[i];
-                actual_averages[cnt] =sum[i]/count[i];                
+                averages[i]=sum[i];
+                actual_averages[cnt] =sum[i];                
                 console.log((i+1)+","+sum[i]+","+count[i]+","+averages[i]);
                 cnt=cnt+1;              
             }   
@@ -635,70 +776,55 @@ function draw_map(data_types,chosen_scale)
         });
         
 
-	// 'interpolateViridis',
-	// 'interpolateInferno',
-	// 'interpolateMagma',
-	// 'interpolatePlasma',
-	// 'interpolateWarm',
-	// 'interpolateCool',
-	// 'interpolateRainbow',
-	// 'interpolateCubehelixDefault'
 
 
-        const scale = d3.scaleSequential()
-            .domain(d3.extent(actual_averages))
-            .interpolator(d3.interpolateRainbow);
-
-
-            if(legend!=null)
+    if(legend!==null)
           map.removeControl(legend);
 
-        if(chosen_scale!="hs")
-        {       
-            legend = L.control({position: 'topleft'});
-            legend.onAdd = function (map) {
-            var div = L.DomUtil.create('div', 'info legend'), labels = [];
-            var colors_legend=["Very Low","Low","Moderate","High Moderate","High","Very High"];
-            var colors_data=new Array(6)
-            for(i=0;i<6;i++)
+      
+    if(chosen_scale!=="hs")
+    {
+        legend = L.control({position: 'bottomleft'});
+        legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'), labels = [];
+        var colors_legend=["Very Low","Low","Moderate","High Moderate","High","Very High"];
+        var colors_data=new Array(6)
+        for(i=0;i<colors_legend.length;i++)
+        {
+            if(chosen_scale=="cb")
             {
-                if(chosen_scale=="cb")
-                {
-                    colors_data[i] = color_brewer[i];
-                }
-                else if(chosen_scale=="cp")
-                {
-                    colors_data[i] = cp_colors[i];
-                }
-                else if(chosen_scale=="gs")
-                {
-                    colors_data[i] = orangeRedTruncate[i];
-                }
-
-                console.log("color["+i+"]="+ colors_data[i]);
+                colors_data[i] = color_brewer[i];
             }
-
-            div.innerHTML = '<h1>Earthquake & Fire</h1><br>';
-            // loop through indices and generate a label with a colored square for each interval
-            for (var i = 0; i < 6; i++) {
-                div.innerHTML +='<i style="background:' + colors_data[i]+ '"></i><b> '+ colors_legend[i]+ '</b><br>';
-
+            else if(chosen_scale=="cp" || chosen_scale=="cl")
+            {
+                colors_data[i] = cp_colors[i];
             }
-            return div;
-            };
-
-
-            legend.addTo(map);
+            else if(chosen_scale=="gs")
+            {
+                colors_data[i] = orangeRedTruncate[i];
+            }
         }
-        else{
 
-            legend = L.control({position: 'topleft'});
+        div.innerHTML = '<h1>Earthquake & Fire</h1><br>';
+        // loop through indices and generate a label with a colored square for each interval
+        for (var i = 0; i < colors_legend.length; i++) {
+            div.innerHTML +='<i style="background:' + colors_data[i]+ '"></i><b> '+ colors_legend[i]+ '</b><br>';
+
+        }
+        return div;
+        };
+         legend.addTo(map);
+    }
+    else{
+
+            legend = L.control({position: 'bottomleft'});
             legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend'), labels = [];            
             var colors_data=new Array(100)
             for(i=0;i<100;i++)
             {
-                colors_data[i]= interpolateHue(i/100);
+                var t=min_hue+(max_hue-min_hue)*i/100;
+                colors_data[i]= interpolateHue(t);
             }
 
             div.innerHTML = '<h1>Earthquake & Fire</h1><br>';
@@ -714,10 +840,10 @@ function draw_map(data_types,chosen_scale)
 
 
             legend.addTo(map);
-        }
+     }
    
-            
 
+        
 
         
     
@@ -774,10 +900,10 @@ function draw_map(data_types,chosen_scale)
 
 
         // var region_0 = L.polygon(d3.polygonHull(r1), {
-        //     //color:get_region_color(avg_max,avg_min,cnt,averages[0]), 
+        //     //color:get_region_color(averages,avg_max,avg_min,cnt,averages[0]), 
         //     opacity: 0, 
-        //   //  fillColor: get_region_color(avg_max,avg_min,cnt,averages[0]),
-        //   fillColor: "radialGradient(0.5,0.5,90%,50%,50%,color:get_region_color(avg_max,avg_min,cnt,averages[0],get_region_color(avg_max,avg_min,cnt,averages[0])",
+        //   //  fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[0]),
+        //   fillColor: "radialGradient(0.5,0.5,90%,50%,50%,color:get_region_color(averages,avg_max,avg_min,cnt,averages[0],get_region_color(averages,avg_max,avg_min,cnt,averages[0])",
         //     fillOpacity:0.7}).addTo(map);
 
        // var region_1 =null,region_2 =null,region_3 =null,region_4 =null,region_5 =null,region_6 =null,region_7 =null,region_8 =null,region_9 =null,region_10 =null;
@@ -891,37 +1017,37 @@ function draw_map(data_types,chosen_scale)
    
 
        
-         california = L.polygon(californiaboundary, {color:"#000", opacity: 0.9,fillColor:get_region_color(avg_max,avg_min,cnt-1),fillOpacity:0.01}).addTo(map);
-         region_1 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r1)]), {color:get_region_color(avg_max,avg_min,cnt,averages[0]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[0]),fillOpacity:0.7}).addTo(map);
-        region_2 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r2)]), {color:get_region_color(avg_max,avg_min,cnt,averages[1]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[1]),fillOpacity:0.7}).addTo(map);
-        region_3 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r3)]), {color:get_region_color(avg_max,avg_min,cnt,averages[2]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[2]),fillOpacity:0.7}).addTo(map);
-        region_4 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r4)]), {color:get_region_color(avg_max,avg_min,cnt,averages[3]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[3]),fillOpacity:0.7}).addTo(map);
-        region_5 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r5)]), {color:get_region_color(avg_max,avg_min,cnt,averages[4]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[4]),fillOpacity:0.7}).addTo(map);
-        region_6 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r6)]), {color:get_region_color(avg_max,avg_min,cnt,averages[5]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[5]),fillOpacity:0.7}).addTo(map);
-        region_7 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r7)]), {color:get_region_color(avg_max,avg_min,cnt,averages[6]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[6]),fillOpacity:0.7}).addTo(map);
-        region_8 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r8)]), {color:get_region_color(avg_max,avg_min,cnt,averages[7]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[7]),fillOpacity:0.7}).addTo(map);
-        region_9 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r9)]), {color:get_region_color(avg_max,avg_min,cnt,averages[8]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[8]),fillOpacity:0.5}).addTo(map);  
-        region_10 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r10)]), {color:get_region_color(avg_max,avg_min,cnt,averages[9]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[9]),fillOpacity:0.7}).addTo(map);      
-        region_11 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r11)]), {color:get_region_color(avg_max,avg_min,cnt,averages[10]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[10]),fillOpacity:0.7}).addTo(map);
-        region_12 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r12)]), {color:get_region_color(avg_max,avg_min,cnt,averages[11]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[11]),fillOpacity:0.7}).addTo(map);
-        region_13 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r13)]), {color:get_region_color(avg_max,avg_min,cnt,averages[12]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[12]),fillOpacity:0.7}).addTo(map);
-        region_14 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r14)]), {color:get_region_color(avg_max,avg_min,cnt,averages[13]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[13]),fillOpacity:0.7}).addTo(map);
-        region_15 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r15)]), {color:get_region_color(avg_max,avg_min,cnt,averages[14]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[14]),fillOpacity:0.7}).addTo(map);
-        region_16 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r16)]), {color:get_region_color(avg_max,avg_min,cnt,averages[15]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[15]),fillOpacity:0.7}).addTo(map);
-        region_17 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r17)]), {color:get_region_color(avg_max,avg_min,cnt,averages[16]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[16]),fillOpacity:0.7}).addTo(map);
-        region_18 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r18)]), {color:get_region_color(avg_max,avg_min,cnt,averages[17]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[17]),fillOpacity:0.7}).addTo(map);
-        region_19 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r19)]), {color:get_region_color(avg_max,avg_min,cnt,averages[18]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[18]),fillOpacity:0.5}).addTo(map);  
-        region_20 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r20)]), {color:get_region_color(avg_max,avg_min,cnt,averages[19]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[19]),fillOpacity:0.7}).addTo(map);      
-        region_21 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r21)]), {color:get_region_color(avg_max,avg_min,cnt,averages[20]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[20]),fillOpacity:0.7}).addTo(map);
-        region_22 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r22)]), {color:get_region_color(avg_max,avg_min,cnt,averages[21]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[21]),fillOpacity:0.7}).addTo(map);
-        region_23 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r23)]), {color:get_region_color(avg_max,avg_min,cnt,averages[22]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[22]),fillOpacity:0.7}).addTo(map);
-        region_24 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r24)]), {color:get_region_color(avg_max,avg_min,cnt,averages[23]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[23]),fillOpacity:0.7}).addTo(map);
-        region_25 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r25)]), {color:get_region_color(avg_max,avg_min,cnt,averages[24]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[24]),fillOpacity:0.7}).addTo(map);
-        region_26 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r26)]), {color:get_region_color(avg_max,avg_min,cnt,averages[25]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[25]),fillOpacity:0.7}).addTo(map);
-        region_27 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r27)]), {color:get_region_color(avg_max,avg_min,cnt,averages[26]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[26]),fillOpacity:0.7}).addTo(map);
-        region_28 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r28)]), {color:get_region_color(avg_max,avg_min,cnt,averages[27]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[27]),fillOpacity:0.7}).addTo(map);
-        region_29 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r29)]), {color:get_region_color(avg_max,avg_min,cnt,averages[28]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[28]),fillOpacity:0.5}).addTo(map);  
-        region_30 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r30)]), {color:get_region_color(avg_max,avg_min,cnt,averages[29]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[29]),fillOpacity:0.5}).addTo(map);  
+         california = L.polygon(californiaboundary, {color:"#000", opacity: 0.9,fillColor:"#000",fillOpacity:0.01}).addTo(map);
+         region_1 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r1)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[0]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[0]),fillOpacity:0.7}).addTo(map);
+        region_2 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r2)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[1]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[1]),fillOpacity:0.7}).addTo(map);
+        region_3 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r3)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[2]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[2]),fillOpacity:0.7}).addTo(map);
+        region_4 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r4)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[3]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[3]),fillOpacity:0.7}).addTo(map);
+        region_5 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r5)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[4]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[4]),fillOpacity:0.7}).addTo(map);
+        region_6 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r6)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[5]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[5]),fillOpacity:0.7}).addTo(map);
+        region_7 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r7)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[6]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[6]),fillOpacity:0.7}).addTo(map);
+        region_8 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r8)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[7]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[7]),fillOpacity:0.7}).addTo(map);
+        region_9 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r9)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[8]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[8]),fillOpacity:0.7}).addTo(map);  
+        region_10 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r10)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[9]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[9]),fillOpacity:0.7}).addTo(map);      
+        region_11 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r11)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[10]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[10]),fillOpacity:0.7}).addTo(map);
+        region_12 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r12)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[11]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[11]),fillOpacity:0.7}).addTo(map);
+        region_13 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r13)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[12]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[12]),fillOpacity:0.7}).addTo(map);
+        region_14 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r14)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[13]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[13]),fillOpacity:0.7}).addTo(map);
+        region_15 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r15)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[14]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[14]),fillOpacity:0.7}).addTo(map);
+        region_16 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r16)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[15]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[15]),fillOpacity:0.7}).addTo(map);
+        region_17 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r17)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[16]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[16]),fillOpacity:0.7}).addTo(map);
+        region_18 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r18)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[17]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[17]),fillOpacity:0.7}).addTo(map);
+        region_19 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r19)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[18]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[18]),fillOpacity:0.7}).addTo(map);  
+        region_20 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r20)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[19]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[19]),fillOpacity:0.7}).addTo(map);      
+        region_21 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r21)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[20]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[20]),fillOpacity:0.7}).addTo(map);
+        region_22 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r22)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[21]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[21]),fillOpacity:0.7}).addTo(map);
+        region_23 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r23)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[22]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[22]),fillOpacity:0.7}).addTo(map);
+        region_24 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r24)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[23]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[23]),fillOpacity:0.7}).addTo(map);
+        region_25 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r25)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[24]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[24]),fillOpacity:0.7}).addTo(map);
+        region_26 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r26)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[25]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[25]),fillOpacity:0.7}).addTo(map);
+        region_27 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r27)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[26]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[26]),fillOpacity:0.7}).addTo(map);
+        region_28 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r28)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[27]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[27]),fillOpacity:0.7}).addTo(map);
+        region_29 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r29)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[28]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[28]),fillOpacity:0.7}).addTo(map);  
+        region_30 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r30)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[29]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[29]),fillOpacity:0.7}).addTo(map);  
         region_1.bindTooltip(averages[0].toString()).openTooltip();
         region_2.bindTooltip(averages[1].toString()).openTooltip();
         region_3.bindTooltip(averages[2].toString()).openTooltip();
@@ -980,171 +1106,171 @@ function draw_map(data_types,chosen_scale)
         }
         for (i=0; i <np; i++)
         {           
-            if(parseInt(data[i].f_cluster_19)==1)
+            if(parseInt(data[i].f_cluster_19)===1)
             {
                 r1[count[0]]=new Array(2);
                 r1[count[0]][0]=parseFloat(data[i].latitude);
                 r1[count[0]][1]=parseFloat(data[i].longitude);
-                sum[0] = sum[0]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[0] = (parseFloat(data[i].f_cluster_19_rating));
                 count[0]=count[0]+1; 
             }
-            if(parseInt(data[i].f_cluster_19)==2)
+            if(parseInt(data[i].f_cluster_19)===2)
             {
                 r2[count[1]]=new Array(2);
                 r2[count[1]][0]=parseFloat(data[i].latitude);
                 r2[count[1]][1]=parseFloat(data[i].longitude);
-                sum[1] = sum[1]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[1] = (parseFloat(data[i].f_cluster_19_rating));
                 count[1]=count[1]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==3)
+            if(parseInt(data[i].f_cluster_19)===3)
             {
                 
                 r3[count[2]]=new Array(2);
                 r3[count[2]][0]=parseFloat(data[i].latitude);
                 r3[count[2]][1]=parseFloat(data[i].longitude);
-                sum[2] = sum[2]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[2] = (parseFloat(data[i].f_cluster_19_rating));
                 count[2]=count[2]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==4)
+            if(parseInt(data[i].f_cluster_19)===4)
             {
                 
                 r4[count[3]]=new Array(2);
                 r4[count[3]][0]=parseFloat(data[i].latitude);
                 r4[count[3]][1]=parseFloat(data[i].longitude);
-                sum[3] = sum[3]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[3] = (parseFloat(data[i].f_cluster_19_rating));
                 count[3]=count[3]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==5)
+            if(parseInt(data[i].f_cluster_19)===5)
             {
                 
                 r5[count[4]]=new Array(2);
                 r5[count[4]][0]=parseFloat(data[i].latitude);
                 r5[count[4]][1]=parseFloat(data[i].longitude);
-                sum[4] = sum[4]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[4] =(parseFloat(data[i].f_cluster_19_rating));
                 count[4]=count[4]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==6)
+            if(parseInt(data[i].f_cluster_19)===6)
             {
                 
                 r6[count[5]]=new Array(2);
                 r6[count[5]][0]=parseFloat(data[i].latitude);
                 r6[count[5]][1]=parseFloat(data[i].longitude);
-                sum[5] = sum[5]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[5] =(parseFloat(data[i].f_cluster_19_rating));
                 count[5]=count[5]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==7)
+            if(parseInt(data[i].f_cluster_19)===7)
             {
                 
                 r7[count[6]]=new Array(2);
                 r7[count[6]][0]=parseFloat(data[i].latitude);
                 r7[count[6]][1]=parseFloat(data[i].longitude);
-                sum[6] = sum[6]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[6] =(parseFloat(data[i].f_cluster_19_rating));
                 count[6]=count[6]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==8)
+            if(parseInt(data[i].f_cluster_19)===8)
             {
                 
                 r8[count[7]]=new Array(2);
                 r8[count[7]][0]=parseFloat(data[i].latitude);
                 r8[count[7]][1]=parseFloat(data[i].longitude);
-                sum[7] = sum[7]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[7] =(parseFloat(data[i].f_cluster_19_rating));
                 count[7]=count[7]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==9)
+            if(parseInt(data[i].f_cluster_19)===9)
             {
                 
                 r9[count[8]]=new Array(2);
                 r9[count[8]][0]=parseFloat(data[i].latitude);
                 r9[count[8]][1]=parseFloat(data[i].longitude);
-                sum[8] = sum[8]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[8] =(parseFloat(data[i].f_cluster_19_rating));
                 count[8]=count[8]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==10)
+            if(parseInt(data[i].f_cluster_19)===10)
             {
                 
                 r10[count[9]]=new Array(2);
                 r10[count[9]][0]=parseFloat(data[i].latitude);
                 r10[count[9]][1]=parseFloat(data[i].longitude);
-                sum[9] = sum[9]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[9] =(parseFloat(data[i].f_cluster_19_rating));
                 count[9]=count[9]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==11)
+            if(parseInt(data[i].f_cluster_19)===11)
             {
                 
                 r11[count[10]]=new Array(2);
                 r11[count[10]][0]=parseFloat(data[i].latitude);
                 r11[count[10]][1]=parseFloat(data[i].longitude);
-               sum[10] = sum[10]+100*(parseFloat(data[i].f_cluster_19_rating));
+               sum[10] =(parseFloat(data[i].f_cluster_19_rating));
                count[10]=count[10]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==12)
+            if(parseInt(data[i].f_cluster_19)===12)
             {
                 
                 r12[count[11]]=new Array(2);
                 r12[count[11]][0]=parseFloat(data[i].latitude);
                 r12[count[11]][1]=parseFloat(data[i].longitude);
-                sum[11] = sum[11]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[11] =(parseFloat(data[i].f_cluster_19_rating));
                 count[11]=count[11]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==13)
+            if(parseInt(data[i].f_cluster_19)===13)
             {
                 
                 r13[count[12]]=new Array(2);
                 r13[count[12]][0]=parseFloat(data[i].latitude);
                 r13[count[12]][1]=parseFloat(data[i].longitude);
-                sum[12] = sum[12]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[12] =(parseFloat(data[i].f_cluster_19_rating));
                 count[12]=count[12]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==14)
+            if(parseInt(data[i].f_cluster_19)===14)
             {
                 
                 r14[count[13]]=new Array(2);
                 r14[count[13]][0]=parseFloat(data[i].latitude);
                 r14[count[13]][1]=parseFloat(data[i].longitude);
-                sum[13] = sum[13]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[13] =(parseFloat(data[i].f_cluster_19_rating));
                 count[13]=count[13]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==15)
+            if(parseInt(data[i].f_cluster_19)===15)
             {
                 
                 r15[count[14]]=new Array(2);
                 r15[count[14]][0]=parseFloat(data[i].latitude);
                 r15[count[14]][1]=parseFloat(data[i].longitude);
-                sum[14] = sum[14]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[14] =(parseFloat(data[i].f_cluster_19_rating));
                 count[14]=count[14]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==16)
+            if(parseInt(data[i].f_cluster_19)===16)
             {
                 r16[count[15]]=new Array(2);
                 r16[count[15]][0]=parseFloat(data[i].latitude);
                 r16[count[15]][1]=parseFloat(data[i].longitude);
-                sum[15] = sum[15]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[15] =(parseFloat(data[i].f_cluster_19_rating));
                 count[15]=count[15]+1; 
             }
-            if(parseInt(data[i].f_cluster_19)==17)
+            if(parseInt(data[i].f_cluster_19)===17)
             {
                 r17[count[16]]=new Array(2);
                 r17[count[16]][0]=parseFloat(data[i].latitude);
                 r17[count[16]][1]=parseFloat(data[i].longitude);
-                sum[16] = sum[16]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[16] =(parseFloat(data[i].f_cluster_19_rating));
                 count[16]=count[16]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==18)
+            if(parseInt(data[i].f_cluster_19)===18)
             {
                 
                 r18[count[17]]=new Array(2);
                 r18[count[17]][0]=parseFloat(data[i].latitude);
                 r18[count[17]][1]=parseFloat(data[i].longitude);
-                sum[17] = sum[17]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[17] =(parseFloat(data[i].f_cluster_19_rating));
                 count[17]=count[17]+1;
             }
-            if(parseInt(data[i].f_cluster_19)==19)
+            if(parseInt(data[i].f_cluster_19)===19)
             {
                 
                 r19[count[18]]=new Array(2);
                 r19[count[18]][0]=parseFloat(data[i].latitude);
                 r19[count[18]][1]=parseFloat(data[i].longitude);
-                sum[18] = sum[18]+100*(parseFloat(data[i].f_cluster_19_rating));
+                sum[18] = (parseFloat(data[i].f_cluster_19_rating));
                 count[18]=count[18]+1;
             }
             
@@ -1159,8 +1285,8 @@ function draw_map(data_types,chosen_scale)
         {
             if(sum[i]>0)
             {
-                averages[i]=sum[i]/count[i];
-                actual_averages[cnt] =sum[i]/count[i];                
+                averages[i]=sum[i];
+                actual_averages[cnt] =sum[i];                
                 console.log((i+1)+","+sum[i]+","+count[i]+","+averages[i]);
                 cnt=cnt+1;              
             }   
@@ -1190,12 +1316,12 @@ function draw_map(data_types,chosen_scale)
             .interpolator(d3.interpolateRainbow);
             
 
-        if(legend!=null)
+        if(legend!==null)
           map.removeControl(legend);
 
-    if(chosen_scale!="hs")
+    if(chosen_scale!=="hs")
     {
-        legend = L.control({position: 'topleft'});
+        legend = L.control({position: 'bottomleft'});
         legend.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'info legend'), labels = [];
         var colors_legend=["Very Low","Low","Moderate","High Moderate","High","Very High"];
@@ -1206,7 +1332,7 @@ function draw_map(data_types,chosen_scale)
             {
                 colors_data[i] = color_brewer[i];
             }
-            else if(chosen_scale=="cp")
+            else if(chosen_scale=="cp" || chosen_scale=="cl")
             {
                 colors_data[i] = cp_colors[i];
             }
@@ -1228,13 +1354,14 @@ function draw_map(data_types,chosen_scale)
     }
     else{
 
-            legend = L.control({position: 'topleft'});
+            legend = L.control({position: 'bottomleft'});
             legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend'), labels = [];            
             var colors_data=new Array(100)
             for(i=0;i<100;i++)
             {
-                colors_data[i]= interpolateHue(i/100);
+                var t=min_hue+(max_hue-min_hue)*i/100;
+                colors_data[i]= interpolateHue(t);
             }
 
             div.innerHTML = '<h1>Fire</h1><br>';
@@ -1297,10 +1424,10 @@ function draw_map(data_types,chosen_scale)
 
 
         // var region_0 = L.polygon(d3.polygonHull(r1), {
-        //     //color:get_region_color(avg_max,avg_min,cnt,averages[0]), 
+        //     //color:get_region_color(averages,avg_max,avg_min,cnt,averages[0]), 
         //     opacity: 0, 
-        //   //  fillColor: get_region_color(avg_max,avg_min,cnt,averages[0]),
-        //  // fillColor: "radialGradient(0.5,0.5,90%,50%,50%,color:get_region_color(avg_max,avg_min,cnt,averages[0],get_region_color(avg_max,avg_min,cnt,averages[0])",
+        //   //  fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[0]),
+        //  // fillColor: "radialGradient(0.5,0.5,90%,50%,50%,color:get_region_color(averages,avg_max,avg_min,cnt,averages[0],get_region_color(averages,avg_max,avg_min,cnt,averages[0])",
         //     fillOpacity:0.7}).addTo(map);
 
        // var region_1 =null,region_2 =null,region_3 =null,region_4 =null,region_5 =null,region_6 =null,region_7 =null,region_8 =null,region_9 =null,region_10 =null;
@@ -1413,26 +1540,26 @@ function draw_map(data_types,chosen_scale)
 
 
        
-        california = L.polygon(californiaboundary, {color:"#000", opacity: 0.9,fillColor:get_region_color(avg_max,avg_min,cnt-1),fillOpacity:0.01}).addTo(map);
-        region_1 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r1)]), {color:get_region_color(avg_max,avg_min,cnt,averages[0]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[0]),fillOpacity:0.7}).addTo(map);
-        region_2 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r2)]), {color:get_region_color(avg_max,avg_min,cnt,averages[1]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[1]),fillOpacity:0.7}).addTo(map);
-        region_3 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r3)]), {color:get_region_color(avg_max,avg_min,cnt,averages[2]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[2]),fillOpacity:0.7}).addTo(map);
-        region_4 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r4)]), {color:get_region_color(avg_max,avg_min,cnt,averages[3]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[3]),fillOpacity:0.7}).addTo(map);
-        region_5 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r5)]), {color:get_region_color(avg_max,avg_min,cnt,averages[4]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[4]),fillOpacity:0.7}).addTo(map);
-        region_6 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r6)]), {color:get_region_color(avg_max,avg_min,cnt,averages[5]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[5]),fillOpacity:0.7}).addTo(map);
-        region_7 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r7)]), {color:get_region_color(avg_max,avg_min,cnt,averages[6]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[6]),fillOpacity:0.7}).addTo(map);
-        region_8 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r8)]), {color:get_region_color(avg_max,avg_min,cnt,averages[7]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[7]),fillOpacity:0.7}).addTo(map);
-        region_9 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r9)]), {color:get_region_color(avg_max,avg_min,cnt,averages[8]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[8]),fillOpacity:0.5}).addTo(map);  
-        region_10 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r10)]), {color:get_region_color(avg_max,avg_min,cnt,averages[9]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[9]),fillOpacity:0.7}).addTo(map);      
-        region_11 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r11)]), {color:get_region_color(avg_max,avg_min,cnt,averages[10]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[10]),fillOpacity:0.7}).addTo(map);
-        region_12 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r12)]), {color:get_region_color(avg_max,avg_min,cnt,averages[11]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[11]),fillOpacity:0.7}).addTo(map);
-        region_13 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r13)]), {color:get_region_color(avg_max,avg_min,cnt,averages[12]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[12]),fillOpacity:0.7}).addTo(map);
-        region_14 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r14)]), {color:get_region_color(avg_max,avg_min,cnt,averages[13]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[13]),fillOpacity:0.7}).addTo(map);
-        region_15 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r15)]), {color:get_region_color(avg_max,avg_min,cnt,averages[14]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[14]),fillOpacity:0.7}).addTo(map);
-        region_16 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r16)]), {color:get_region_color(avg_max,avg_min,cnt,averages[15]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[15]),fillOpacity:0.7}).addTo(map);
-        region_17 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r17)]), {color:get_region_color(avg_max,avg_min,cnt,averages[16]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[16]),fillOpacity:0.7}).addTo(map);
-        region_18 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r18)]), {color:get_region_color(avg_max,avg_min,cnt,averages[17]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[17]),fillOpacity:0.7}).addTo(map);
-        region_19 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r19)]), {color:get_region_color(avg_max,avg_min,cnt,averages[18]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[18]),fillOpacity:0.5}).addTo(map);  
+        california = L.polygon(californiaboundary, {color:"#000", opacity: 0.9,fillColor:"#000",fillOpacity:0.01}).addTo(map);
+        region_1 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r1)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[0]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[0]),fillOpacity:0.7}).addTo(map);
+        region_2 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r2)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[1]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[1]),fillOpacity:0.7}).addTo(map);
+        region_3 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r3)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[2]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[2]),fillOpacity:0.7}).addTo(map);
+        region_4 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r4)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[3]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[3]),fillOpacity:0.7}).addTo(map);
+        region_5 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r5)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[4]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[4]),fillOpacity:0.7}).addTo(map);
+        region_6 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r6)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[5]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[5]),fillOpacity:0.7}).addTo(map);
+        region_7 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r7)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[6]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[6]),fillOpacity:0.7}).addTo(map);
+        region_8 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r8)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[7]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[7]),fillOpacity:0.7}).addTo(map);
+        region_9 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r9)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[8]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[8]),fillOpacity:0.7}).addTo(map);  
+        region_10 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r10)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[9]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[9]),fillOpacity:0.7}).addTo(map);      
+        region_11 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r11)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[10]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[10]),fillOpacity:0.7}).addTo(map);
+        region_12 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r12)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[11]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[11]),fillOpacity:0.7}).addTo(map);
+        region_13 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r13)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[12]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[12]),fillOpacity:0.7}).addTo(map);
+        region_14 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r14)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[13]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[13]),fillOpacity:0.7}).addTo(map);
+        region_15 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r15)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[14]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[14]),fillOpacity:0.7}).addTo(map);
+        region_16 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r16)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[15]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[15]),fillOpacity:0.7}).addTo(map);
+        region_17 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r17)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[16]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[16]),fillOpacity:0.7}).addTo(map);
+        region_18 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r18)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[17]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[17]),fillOpacity:0.7}).addTo(map);
+        region_19 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r19)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[18]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[18]),fillOpacity:0.7}).addTo(map);  
        
         region_1.bindTooltip(averages[0].toString()).openTooltip();
         region_2.bindTooltip(averages[1].toString()).openTooltip();
@@ -1481,180 +1608,180 @@ function draw_map(data_types,chosen_scale)
         }
         for (i=0; i <np; i++)
         {           
-            if(parseInt(data[i].eq_cluster_20)==1)
+            if(parseInt(data[i].eq_cluster_20)===1)
             {
                 r1[count[0]]=new Array(2);
                 r1[count[0]][0]=parseFloat(data[i].latitude);
                 r1[count[0]][1]=parseFloat(data[i].longitude);
-                sum[0] = sum[0]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[0] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[0]=count[0]+1; 
             }
-            if(parseInt(data[i].eq_cluster_20)==2)
+            if(parseInt(data[i].eq_cluster_20)===2)
             {
                 r2[count[1]]=new Array(2);
                 r2[count[1]][0]=parseFloat(data[i].latitude);
                 r2[count[1]][1]=parseFloat(data[i].longitude);
-                sum[1] = sum[1]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[1] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[1]=count[1]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==3)
+            if(parseInt(data[i].eq_cluster_20)===3)
             {
                 
                 r3[count[2]]=new Array(2);
                 r3[count[2]][0]=parseFloat(data[i].latitude);
                 r3[count[2]][1]=parseFloat(data[i].longitude);
-                sum[2] = sum[2]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[2] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[2]=count[2]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==4)
+            if(parseInt(data[i].eq_cluster_20)===4)
             {
                 
                 r4[count[3]]=new Array(2);
                 r4[count[3]][0]=parseFloat(data[i].latitude);
                 r4[count[3]][1]=parseFloat(data[i].longitude);
-                sum[3] = sum[3]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[3] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[3]=count[3]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==5)
+            if(parseInt(data[i].eq_cluster_20)===5)
             {
                 
                 r5[count[4]]=new Array(2);
                 r5[count[4]][0]=parseFloat(data[i].latitude);
                 r5[count[4]][1]=parseFloat(data[i].longitude);
-                sum[4] = sum[4]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[4] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[4]=count[4]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==6)
+            if(parseInt(data[i].eq_cluster_20)===6)
             {
                 
                 r6[count[5]]=new Array(2);
                 r6[count[5]][0]=parseFloat(data[i].latitude);
                 r6[count[5]][1]=parseFloat(data[i].longitude);
-                sum[5] = sum[5]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[5] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[5]=count[5]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==7)
+            if(parseInt(data[i].eq_cluster_20)===7)
             {
                 
                 r7[count[6]]=new Array(2);
                 r7[count[6]][0]=parseFloat(data[i].latitude);
                 r7[count[6]][1]=parseFloat(data[i].longitude);
-                sum[6] = sum[6]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[6] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[6]=count[6]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==8)
+            if(parseInt(data[i].eq_cluster_20)===8)
             {
                 
                 r8[count[7]]=new Array(2);
                 r8[count[7]][0]=parseFloat(data[i].latitude);
                 r8[count[7]][1]=parseFloat(data[i].longitude);
-                sum[7] = sum[7]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[7] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[7]=count[7]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==9)
+            if(parseInt(data[i].eq_cluster_20)===9)
             {
                 
                 r9[count[8]]=new Array(2);
                 r9[count[8]][0]=parseFloat(data[i].latitude);
                 r9[count[8]][1]=parseFloat(data[i].longitude);
-                sum[8] = sum[8]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[8] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[8]=count[8]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==10)
+            if(parseInt(data[i].eq_cluster_20)===10)
             {
                 
                 r10[count[9]]=new Array(2);
                 r10[count[9]][0]=parseFloat(data[i].latitude);
                 r10[count[9]][1]=parseFloat(data[i].longitude);
-                sum[9] = sum[9]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[9] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[9]=count[9]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==11)
+            if(parseInt(data[i].eq_cluster_20)===11)
             {
                 
                 r11[count[10]]=new Array(2);
                 r11[count[10]][0]=parseFloat(data[i].latitude);
                 r11[count[10]][1]=parseFloat(data[i].longitude);
-               sum[10] = sum[10]+100*(parseFloat(data[i].eq_cluster_20_rating));
+               sum[10] =(parseFloat(data[i].eq_cluster_20_rating));
                count[10]=count[10]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==12)
+            if(parseInt(data[i].eq_cluster_20)===12)
             {
                 
                 r12[count[11]]=new Array(2);
                 r12[count[11]][0]=parseFloat(data[i].latitude);
                 r12[count[11]][1]=parseFloat(data[i].longitude);
-                sum[11] = sum[11]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[11] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[11]=count[11]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==13)
+            if(parseInt(data[i].eq_cluster_20)===13)
             {
                 
                 r13[count[12]]=new Array(2);
                 r13[count[12]][0]=parseFloat(data[i].latitude);
                 r13[count[12]][1]=parseFloat(data[i].longitude);
-                sum[12] = sum[12]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[12] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[12]=count[12]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==14)
+            if(parseInt(data[i].eq_cluster_20)===14)
             {
                 
                 r14[count[13]]=new Array(2);
                 r14[count[13]][0]=parseFloat(data[i].latitude);
                 r14[count[13]][1]=parseFloat(data[i].longitude);
-                sum[13] = sum[13]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[13] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[13]=count[13]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==15)
+            if(parseInt(data[i].eq_cluster_20)===15)
             {
                 
                 r15[count[14]]=new Array(2);
                 r15[count[14]][0]=parseFloat(data[i].latitude);
                 r15[count[14]][1]=parseFloat(data[i].longitude);
-                sum[14] = sum[14]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[14] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[14]=count[14]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==16)
+            if(parseInt(data[i].eq_cluster_20)===16)
             {
                 r16[count[15]]=new Array(2);
                 r16[count[15]][0]=parseFloat(data[i].latitude);
                 r16[count[15]][1]=parseFloat(data[i].longitude);
-                sum[15] = sum[15]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[15] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[15]=count[15]+1; 
             }
-            if(parseInt(data[i].eq_cluster_20)==17)
+            if(parseInt(data[i].eq_cluster_20)===17)
             {
                 r17[count[16]]=new Array(2);
                 r17[count[16]][0]=parseFloat(data[i].latitude);
                 r17[count[16]][1]=parseFloat(data[i].longitude);
-                sum[16] = sum[16]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[16] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[16]=count[16]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==18)
+            if(parseInt(data[i].eq_cluster_20)===18)
             {
                 
                 r18[count[17]]=new Array(2);
                 r18[count[17]][0]=parseFloat(data[i].latitude);
                 r18[count[17]][1]=parseFloat(data[i].longitude);
-                sum[17] = sum[17]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[17] =(parseFloat(data[i].eq_cluster_20_rating));
                 count[17]=count[17]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==19)
+            if(parseInt(data[i].eq_cluster_20)===19)
             {
                 
                 r19[count[18]]=new Array(2);
                 r19[count[18]][0]=parseFloat(data[i].latitude);
                 r19[count[18]][1]=parseFloat(data[i].longitude);
-                sum[18] = sum[18]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[18] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[18]=count[18]+1;
             }
-            if(parseInt(data[i].eq_cluster_20)==20)
+            if(parseInt(data[i].eq_cluster_20)===20)
             {
                 
                 r19[count[19]]=new Array(2);
                 r19[count[19]][0]=parseFloat(data[i].latitude);
                 r19[count[19]][1]=parseFloat(data[i].longitude);
-                sum[19] = sum[19]+100*(parseFloat(data[i].eq_cluster_20_rating));
+                sum[19] = (parseFloat(data[i].eq_cluster_20_rating));
                 count[19]=count[19]+1;
             }
             
@@ -1669,8 +1796,8 @@ function draw_map(data_types,chosen_scale)
         {
             if(sum[i]>0)
             {
-                averages[i]=sum[i]/count[i];
-                actual_averages[cnt] =sum[i]/count[i];                
+                averages[i]=sum[i];
+                actual_averages[cnt] =sum[i];                
                 console.log((i+1)+","+sum[i]+","+count[i]+","+averages[i]);
                 cnt=cnt+1;              
             }   
@@ -1701,12 +1828,12 @@ function draw_map(data_types,chosen_scale)
             
 
                
-        if(legend!=null)
+        if(legend!==null)
           map.removeControl(legend);
     
-    if(chosen_scale!="hs")
+    if(chosen_scale!=="hs")
     {   
-        legend = L.control({position: 'topleft'});
+        legend = L.control({position: 'bottomleft'});
         legend.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'info legend'), labels = [];
         var colors_legend=["Very Low","Low","Moderate","High Moderate","High","Very High"];
@@ -1717,7 +1844,7 @@ function draw_map(data_types,chosen_scale)
             {
                 colors_data[i] = color_brewer[i];
             }
-            else if(chosen_scale=="cp")
+            else if(chosen_scale=="cp" || chosen_scale=="cl")
             {
                 colors_data[i] = cp_colors[i];
             }
@@ -1741,13 +1868,15 @@ function draw_map(data_types,chosen_scale)
     }
     else{
 
-            legend = L.control({position: 'topleft'});
+ 
+        legend = L.control({position: 'bottomleft'});
             legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend'), labels = [];            
             var colors_data=new Array(100)
             for(i=0;i<100;i++)
             {
-                colors_data[i]= interpolateHue(i/100);
+                var t=min_hue+(max_hue-min_hue)*i/100;
+                colors_data[i]= interpolateHue(t);
             }
 
             div.innerHTML = '<h1>Earthquake</h1><br>';
@@ -1810,10 +1939,10 @@ function draw_map(data_types,chosen_scale)
 
 
         // var region_0 = L.polygon(d3.polygonHull(r1), {
-        //     //color:get_region_color(avg_max,avg_min,cnt,averages[0]), 
+        //     //color:get_region_color(averages,avg_max,avg_min,cnt,averages[0]), 
         //     opacity: 0, 
-        //   //  fillColor: get_region_color(avg_max,avg_min,cnt,averages[0]),
-        //  // fillColor: "radialGradient(0.5,0.5,90%,50%,50%,color:get_region_color(avg_max,avg_min,cnt,averages[0],get_region_color(avg_max,avg_min,cnt,averages[0])",
+        //   //  fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[0]),
+        //  // fillColor: "radialGradient(0.5,0.5,90%,50%,50%,color:get_region_color(averages,avg_max,avg_min,cnt,averages[0],get_region_color(averages,avg_max,avg_min,cnt,averages[0])",
         //     fillOpacity:0.7}).addTo(map);
 
        // var region_1 =null,region_2 =null,region_3 =null,region_4 =null,region_5 =null,region_6 =null,region_7 =null,region_8 =null,region_9 =null,region_10 =null;
@@ -1926,27 +2055,27 @@ function draw_map(data_types,chosen_scale)
 
 
        
-        california = L.polygon(californiaboundary, {color:"#000", opacity: 0.9,fillColor:get_region_color(avg_max,avg_min,cnt-1),fillOpacity:0.01}).addTo(map);
-        region_1 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r1)]), {color:get_region_color(avg_max,avg_min,cnt,averages[0]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[0]),fillOpacity:0.7}).addTo(map);
-        region_2 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r2)]), {color:get_region_color(avg_max,avg_min,cnt,averages[1]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[1]),fillOpacity:0.7}).addTo(map);
-        region_3 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r3)]), {color:get_region_color(avg_max,avg_min,cnt,averages[2]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[2]),fillOpacity:0.7}).addTo(map);
-        region_4 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r4)]), {color:get_region_color(avg_max,avg_min,cnt,averages[3]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[3]),fillOpacity:0.7}).addTo(map);
-        region_5 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r5)]), {color:get_region_color(avg_max,avg_min,cnt,averages[4]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[4]),fillOpacity:0.7}).addTo(map);
-        region_6 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r6)]), {color:get_region_color(avg_max,avg_min,cnt,averages[5]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[5]),fillOpacity:0.7}).addTo(map);
-        region_7 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r7)]), {color:get_region_color(avg_max,avg_min,cnt,averages[6]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[6]),fillOpacity:0.7}).addTo(map);
-        region_8 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r8)]), {color:get_region_color(avg_max,avg_min,cnt,averages[7]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[7]),fillOpacity:0.7}).addTo(map);
-        region_9 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r9)]), {color:get_region_color(avg_max,avg_min,cnt,averages[8]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[8]),fillOpacity:0.5}).addTo(map);  
-        region_10 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r10)]), {color:get_region_color(avg_max,avg_min,cnt,averages[9]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[9]),fillOpacity:0.7}).addTo(map);      
-        region_11 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r11)]), {color:get_region_color(avg_max,avg_min,cnt,averages[10]), opacity: 0,fillColor:get_region_color(avg_max,avg_min,cnt,averages[10]),fillOpacity:0.7}).addTo(map);
-        region_12 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r12)]), {color:get_region_color(avg_max,avg_min,cnt,averages[11]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[11]),fillOpacity:0.7}).addTo(map);
-        region_13 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r13)]), {color:get_region_color(avg_max,avg_min,cnt,averages[12]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[12]),fillOpacity:0.7}).addTo(map);
-        region_14 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r14)]), {color:get_region_color(avg_max,avg_min,cnt,averages[13]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[13]),fillOpacity:0.7}).addTo(map);
-        region_15 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r15)]), {color:get_region_color(avg_max,avg_min,cnt,averages[14]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[14]),fillOpacity:0.7}).addTo(map);
-        region_16 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r16)]), {color:get_region_color(avg_max,avg_min,cnt,averages[15]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[15]),fillOpacity:0.7}).addTo(map);
-        region_17 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r17)]), {color:get_region_color(avg_max,avg_min,cnt,averages[16]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[16]),fillOpacity:0.7}).addTo(map);
-        region_18 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r18)]), {color:get_region_color(avg_max,avg_min,cnt,averages[17]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[17]),fillOpacity:0.7}).addTo(map);
-        region_19 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r19)]), {color:get_region_color(avg_max,avg_min,cnt,averages[18]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[18]),fillOpacity:0.5}).addTo(map);  
-        region_20 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r20)]), {color:get_region_color(avg_max,avg_min,cnt,averages[19]), opacity: 0,fillColor: get_region_color(avg_max,avg_min,cnt,averages[19]),fillOpacity:0.5}).addTo(map);  
+        california = L.polygon(californiaboundary, {color:"#000", opacity: 0.9,fillColor:"#000",fillOpacity:0.01}).addTo(map);
+        region_1 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r1)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[0]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[0]),fillOpacity:0.7}).addTo(map);
+        region_2 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r2)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[1]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[1]),fillOpacity:0.7}).addTo(map);
+        region_3 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r3)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[2]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[2]),fillOpacity:0.7}).addTo(map);
+        region_4 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r4)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[3]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[3]),fillOpacity:0.7}).addTo(map);
+        region_5 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r5)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[4]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[4]),fillOpacity:0.7}).addTo(map);
+        region_6 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r6)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[5]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[5]),fillOpacity:0.7}).addTo(map);
+        region_7 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r7)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[6]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[6]),fillOpacity:0.7}).addTo(map);
+        region_8 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r8)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[7]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[7]),fillOpacity:0.7}).addTo(map);
+        region_9 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r9)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[8]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[8]),fillOpacity:0.7}).addTo(map);  
+        region_10 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r10)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[9]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[9]),fillOpacity:0.7}).addTo(map);      
+        region_11 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r11)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[10]), opacity: 0,fillColor:get_region_color(averages,avg_max,avg_min,cnt,averages[10]),fillOpacity:0.7}).addTo(map);
+        region_12 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r12)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[11]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[11]),fillOpacity:0.7}).addTo(map);
+        region_13 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r13)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[12]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[12]),fillOpacity:0.7}).addTo(map);
+        region_14 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r14)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[13]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[13]),fillOpacity:0.7}).addTo(map);
+        region_15 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r15)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[14]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[14]),fillOpacity:0.7}).addTo(map);
+        region_16 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r16)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[15]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[15]),fillOpacity:0.7}).addTo(map);
+        region_17 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r17)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[16]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[16]),fillOpacity:0.7}).addTo(map);
+        region_18 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r18)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[17]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[17]),fillOpacity:0.7}).addTo(map);
+        region_19 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r19)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[18]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[18]),fillOpacity:0.7}).addTo(map);  
+        region_20 = L.polygon(polygonClipping.intersection([californiaboundary],[d3.polygonHull(r20)]), {color:get_region_color(averages,avg_max,avg_min,cnt,averages[19]), opacity: 0,fillColor: get_region_color(averages,avg_max,avg_min,cnt,averages[19]),fillOpacity:0.7}).addTo(map);  
        
         region_1.bindTooltip(averages[0].toString()).openTooltip();
         region_2.bindTooltip(averages[1].toString()).openTooltip();
