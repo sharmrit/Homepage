@@ -82,7 +82,7 @@
 }
 
 .legend j {
-    width: 1px;
+    width: 2px;
     height: 18px;
     float: left;
     opacity: 0.7;
@@ -828,13 +828,20 @@ function draw_map(data_types,chosen_scale)
             }
 
             div.innerHTML = '<h1>Earthquake & Fire</h1><br>';
-            div.innerHTML +='<b>Low</b>';
             // loop through indices and generate a label with a colored square for each interval
             for (var i = 0; i < 100; i++) {
-                div.innerHTML +='<j style="background:' + colors_data[i]+ '"></j>';
-
+                if(i===0)
+                {
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"><b>Low</b></j>';
+                }else if(i===86)
+                {
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"><b>High</b></j>';
+                   
+                }
+                else{
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"></j>';
+                }
             }
-            div.innerHTML +='<b>High</b>';
             return div;
             };
 
@@ -1365,13 +1372,20 @@ function draw_map(data_types,chosen_scale)
             }
 
             div.innerHTML = '<h1>Fire</h1><br>';
-            div.innerHTML +='<b>Low</b>';
-            // loop through indices and generate a label with a colored square for each interval
+                        // loop through indices and generate a label with a colored square for each interval
             for (var i = 0; i < 100; i++) {
-                div.innerHTML +='<j style="background:' + colors_data[i]+ '"></j>';
-
+                if(i===0)
+                {
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"><b>Low</b></j>';
+                }else if(i===86)
+                {
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"><b>High</b></j>';
+                   
+                }
+                else{
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"></j>';
+                }
             }
-            div.innerHTML +='<b>High</b>';
             return div;
             };
 
@@ -1880,13 +1894,24 @@ function draw_map(data_types,chosen_scale)
             }
 
             div.innerHTML = '<h1>Earthquake</h1><br>';
-            div.innerHTML +='<b>Low</b>';
+         
             // loop through indices and generate a label with a colored square for each interval
             for (var i = 0; i < 100; i++) {
-                div.innerHTML +='<j style="background:' + colors_data[i]+ '"></j>';
+                if(i===0)
+                {
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"><b>Low</b></j>';
+                }else if(i===86)
+                {
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"><b>High</b></j>';
+                   
+                }
+                else{
+                    div.innerHTML +='<j style="background:' + colors_data[i]+ '"></j>';
+                }
+                
 
             }
-            div.innerHTML +='<b>High</b>';
+            
             return div;
             };
 
@@ -2096,21 +2121,11 @@ function draw_map(data_types,chosen_scale)
         region_17.bindTooltip(averages[16].toString()).openTooltip();
         region_18.bindTooltip(averages[17].toString()).openTooltip();
         region_19.bindTooltip(averages[18].toString()).openTooltip();
-        region_20.bindTooltip(averages[19].toString()).openTooltip();
-
-
-
-          
+        region_20.bindTooltip(averages[19].toString()).openTooltip();          
     });
-    }
-    
+    }   
 
 }
-
-
-  
-
-
 </script>
 
 </body>
