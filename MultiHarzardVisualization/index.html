@@ -803,6 +803,7 @@ function draw_map(data_types,chosen_scale)
             {
                 colors_data[i] = orangeRedTruncate[i];
             }
+           
         }
 
         div.innerHTML = '<h1>Earthquake & Fire</h1><br>';
@@ -1102,9 +1103,9 @@ function draw_map(data_types,chosen_scale)
         var r21=new Array(np),r22=new Array(np),r23=new Array(np),r24=new Array(np), r25=new Array(np);
         var r26=new Array(np),r27=new Array(np),r28=new Array(np),r29=new Array(np),r30=new Array(np);
 
-        var sum = new Array(30);
-        var Averages = new Array(30);
-        var count = new Array(30);
+        var sum = new Array(19);
+        var Averages = new Array(19);
+        var count = new Array(19);
         for (i=0; i <30; i++)
         {   
             sum[i]= 0;
@@ -1284,11 +1285,11 @@ function draw_map(data_types,chosen_scale)
         }
 
        
-        var averages = new Array(30);
-        var actual_averages = new Array(30);
+        var averages = new Array(19);
+        var actual_averages = new Array(19);
         var cnt=0;
         console.log("num,sum,count,averages");
-        for (i=0; i <30; i++)
+        for (i=0; i <19; i++)
         {
             if(sum[i]>0)
             {
@@ -1611,10 +1612,10 @@ function draw_map(data_types,chosen_scale)
         var r21=new Array(np),r22=new Array(np),r23=new Array(np),r24=new Array(np), r25=new Array(np);
         var r26=new Array(np),r27=new Array(np),r28=new Array(np),r29=new Array(np),r30=new Array(np);
 
-        var sum = new Array(30);
-        var Averages = new Array(30);
-        var count = new Array(30);
-        for (i=0; i <30; i++)
+        var sum = new Array(20);
+        var Averages = new Array(20);
+        var count = new Array(20);
+        for (i=0; i <20; i++)
         {   
             sum[i]= 0;
             Averages[i]= 0;
@@ -1802,11 +1803,11 @@ function draw_map(data_types,chosen_scale)
         }
 
        
-        var averages = new Array(30);
-        var actual_averages = new Array(30);
+        var averages = new Array(20);
+        var actual_averages = new Array(20);
         var cnt=0;
         console.log("num,sum,count,averages");
-        for (i=0; i <30; i++)
+        for (i=0; i <20; i++)
         {
             if(sum[i]>0)
             {
@@ -2121,11 +2122,12 @@ function draw_map(data_types,chosen_scale)
         region_17.bindTooltip(averages[16].toString()).openTooltip();
         region_18.bindTooltip(averages[17].toString()).openTooltip();
         region_19.bindTooltip(averages[18].toString()).openTooltip();
-        region_20.bindTooltip(averages[19].toString()).openTooltip();          
+        region_20.bindTooltip(averages[19].toString()).openTooltip();
+          
     });
-    }   
-
+    }    
 }
+
 </script>
 
 </body>
