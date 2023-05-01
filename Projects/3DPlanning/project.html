@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            }
+            #container {
+            margin: 0 auto;
+            width: 70%;
+            color: #2a2a2a
+            }
+            #title h1, #authors{
+            text-align: center;
+            font-weight: 300;
+            font-size: 28pt;
+            }
+            #authors{
+            width: 100%;
+            margin: 5px auto;
+            }
+            .keyword{
+            font-weight: 500;
+            color: #000;
+            font-size: 24pt;
+            }
+            .url{
+            font-weight: 500;
+            color: #0066ff;
+            }
+            #authors ul {
+            list-style-type: none;
+            margin: 0 auto;
+            padding: 0;
+            overflow: hidden;
+            font-size: 24pt;
+            }
+            #authors li {
+            display: inline-block;
+            margin: 0 20px;
+            }
+            #teaser img {
+                display: block;
+                margin: 0 auto;
+                width: 80%;
+                margin-bottom: 10px;
+            }
+            #abstract {
+            margin: 10px 0; 
+            font-size: 24pt;
+            text-align: justify;
+            }
+            #abstract .keyword, .links .keyword{
+            font-size: 24pt;
+            }
+            a {
+            text-decoration: none;
+            }
+            a:hover{
+            color: #004080;
+            }
+            .links ul{
+            list-style-type: none;		padding-left: 0; 
+            }
+            .links li{
+            margin-bottom: 20px;
+            }
+            /* Three image containers (use 25% for four, and 50% for two, etc) */
+			.column {
+			  float: left;
+			  width: 30%;
+			  padding: 5px;
+			  
+			}
+			.row {
+				height: 15%;
+				margin: 0 auto;
+				text-align:center;
+			}
+			#top-caption {
+				text-align:center;
+                font-size: 24pt;
+			}
+            footer {
+              text-align: center;
+              padding: 10px;
+            }
+            .float-container {
+              width: 100%;
+              text-align:  left;
+              align-items: left;
+            }
+
+            .float-child {
+                float: left; 
+                width: 50%; 
+            }
+            .videofigure {
+                max-width: 98%;
+            }
+            .video-holder{
+                width: 100%;
+            }
+            .top-video {
+                max-width: 55%;
+            }    
+          
+        </style>
+    </head>
+    <body>
+        <a href="https://sharmrit.github.io/Homepage/" class="keyword">Back</a>
+        <div id='container'>
+            <div id='title'>
+                <span style="font-size: 36px;"><h1>Spatially Distributed Lane Planning for Navigation in 3D Environments</h1></span>
+            </div>
+
+            <div id='authors'>
+                <span style="font-size: 28px;">Computer Animation and Social Agents 2023 (To appear)</br>
+                ( To appear at the special issue of Computer Animation and Virtual Worlds )
+                </span>
+            </br></br>
+                <ul>
+                    <li style="font-size: 28px;"><a href="https://sharmrit.github.io/Homepage/">Ritesh Sharma<sup>&#10033;</sup></a></li>
+                    <li style="font-size: 28px;"><a href="https://mkallmann.bitbucket.io/">Marcelo Kallmann<sup>&#10033;</sup></a></li>
+                </ul>
+                <h6>&#10033; University of California Merced</h6>
+            </div>
+
+            <div class="row">
+                <div class="video-holder">
+			    <video class="top-video" allowfullscreen controls >
+                    <source src="CASA_2023_Video_37.mp4" autostart="false">
+                </video>
+            </div>
+			</div>
+
+       		<hr>
+            <div id="abstract">
+                <span class="keyword">Abstract:</span> 
+                This paper introduces the  problem of planning  spatially distributed lanes for supporting multi-agent navigation applications in 3D environments. Our proposed approach computes the max-flow of a 3D medial axis representation of the environment in order to globally determine collision-free lanes exploring the entire free space of the volumetric scene. Our method addresses agent clearance and path dispersion in order to provide a comprehensive methodology to globally compute lanes for guiding multiple agents in a 3D environment.
+                By selecting the desired lane dispersion our approach offers an intuitive and powerful way to explore variations in the computed collections of lanes. Dispersion is addressed with a combination of new techniques based on max flow computation, clearance-based path separation, and adaptive shortcut-based smoothing.
+                <span></span>
+            </div>
+            <hr>
+            <div id="overview">
+                <span class="keyword">Method overview:</span>
+            </div>
+            <div id="teaser"><img src="3DPlanningMethodology.png"/></div>
+            <div id="teaser-caption">
+                <span class="keyword" >Fig. 1: Given an environment (a), a 3D voronoi diagram (b) is constructed. 
+                    Next, intersecting edges and vertices are prunned to obtain medial graph (c). The edges are then 
+                    annotated with clearance information. The annotated clearance is then converted into capacity 
+                    based on the size of the agents. The max flow algorithm is then applied on the medial graph to 
+                    obtained desired number of spatially distributed paths (d). The extracted overlapped paths are 
+                    then separated by splitting the vertices (f) using Path Separation method. Lastly, the paths are 
+                    smoothened by apply adpative shortcut-based smoothing (g). (h) Yellow tubes shows the available 
+                    clearance for each path.            
+                </span> 
+                <span></span>
+            </div>
+            <hr>
+
+            <div class="links">
+                <span class="keyword">Videos</span>
+                <ul>
+                    <!-- <li>UIST'22 preview (30 sec): <a href="https://youtu.be/R4vi-CJkjsw" class="url">YouTube</a>, <a href="files/FPP_sketch_uist22_preview.mp4" class="url">mp4</a></li>
+                    <li>Paper overview (4 mins): <a href="https://youtu.be/aVt6HykegTo" class="url">YouTube</a>, <a href="files/FPP_sketch_uist22.mp4" class="url">mp4</a></li> -->
+                </ul>
+            </div>
+
+            <hr>
+            <div class="links">
+                <span class="keyword">Paper & supplemental materials:</span>
+                <ul>
+                    <li><a href=".pdf" class="url">Paper PDF</a> (PDF, 3 MB)</li>
+                    <li><a href=".pdf" class="url">Supplemental sketches and patterns</a> (PDF, 2 MB)</li>
+                </ul>
+            </div>
+        </div>
+        <footer>
+        </footer>
+    </body>
+    
+</html>
