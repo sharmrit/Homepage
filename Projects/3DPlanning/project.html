@@ -148,14 +148,12 @@
             </div>
             <div id="teaser"><img src="3DPlanningMethodology.png"/></div>
             <div id="teaser-caption">
-                <span class="keyword" ><p align="justify">Fig. 1: Given an environment (a), a 3D voronoi diagram (b) is constructed. 
-                    Next, intersecting edges and vertices are prunned to obtain medial graph (c). The edges are then 
-                    annotated with clearance information. The annotated clearance is then converted into capacity 
-                    based on the size of the agents. The max flow algorithm is then applied on the medial graph to 
-                    obtained desired number of spatially distributed paths (d). The extracted overlapped paths are 
-                    then separated by splitting the vertices (f) using Path Separation method. Lastly, the paths are 
-                    smoothened by apply adpative shortcut-based smoothing (g). (h) Yellow tubes shows the available 
-                    clearance for each path. </p>           
+                <span class="keyword" ><p align="justify">This paper addresses the new problem of planning spatially distributed lanes in 3D environments in order to 
+			achieve conflict-free multi-agent spatial navigation. Given an input 3D environment (a) our method first computes an approximated 3D Voronoi 
+			diagram with pruned vertices and edges (b) from which a medial graph representation is extracted (c). The max flow in the medial graph is then 
+			computed in order to determine collision-free lanes taking into account agent clearance and path dispersion (d). Dispersion is addressed with a 
+			combination of new techniques based on max flow computation, clearance-based path separation (e, f) and adaptive shortcut-based smoothing (g). 
+			The obtained lanes are spatially distributed and guarantee clearance requirements (h).</p>           
                 </span> 
                 <span></span>
             </div>
