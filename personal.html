@@ -14,6 +14,18 @@
   })();
 
 </script>
+
+<script>
+fetch('https://ipapi.co/json/')
+  .then(res => res.json())
+  .then(data => {
+    if (['CN', 'SG'].includes(data.country)) {
+      document.body.innerHTML = "<h1>Access Restricted</h1>";
+    }
+  })
+  .catch(() => {});
+</script>
+
     <meta charset="utf-8">
     <title>Ritesh Sharma</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
