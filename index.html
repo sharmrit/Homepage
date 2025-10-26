@@ -9,7 +9,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-TFRVHTLW');</script>
 <!-- End Google Tag Manager -->
-	  
+<script>
+fetch('https://ipapi.co/json/')
+  .then(res => res.json())
+  .then(data => {
+    if (['CN', 'SG'].includes(data.country)) {
+      document.body.innerHTML = "<h1>Access Restricted</h1>";
+    }
+  })
+  .catch(() => {});
+</script>
+
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
