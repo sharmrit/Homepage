@@ -185,6 +185,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <ul class="nav nav-pills pull-right">
           <li class="active"><a href="index.html">Home</a></li>
           <li><a href="index.html#About">About</a></li>
+          <li><a href="index.html#ResearchOverview">Research</a></li>
 		<li><a href="index.html#Research">Publications</a></li>
 		  <li><a href="index.html#Academics">Academics</a></li>
            <li><a href="RiteshSharma_CV_Web.pdf" target="_blank">CV</a></li>
@@ -244,7 +245,7 @@ multi-sensor perception, with applications in robotics and infrastructure-scale 
 <br><br>
 Previously I was a Postdoctoral Research Associate at the Institute for Robotics and Autonomy at the University
 of Tulsa and a Postdoctoral Fellow at the Center for Intelligent Infrastructure at Missouri University of Science
-and Technology. I received my Ph.D. in Computer Science from the University of California, Merced, advised by
+and Technology. I received my Ph.D. in Electrical Engineering and Computer Science from the University of California, Merced, advised by
 <a href="http://graphics.ucmerced.edu/~mkallmann/" target="_blank">Professor Marcelo Kallmann</a>, where I
 developed geometric and algorithmic foundations for multi-agent navigation, formation-aware planning, and
 decision-making under uncertainty. I have also held research roles at Amazon Robotics, Dolby Laboratories,
@@ -257,6 +258,76 @@ PARC (Xerox), and Passur Aerospace.
 <p><em>I am always interested in research collaborations and in working with motivated students. Feel free to reach out.</em></p>
 <hr>
 </div>
+
+<!-- ===== RESEARCH OVERVIEW ===== -->
+<style type="text/css">
+  .research-fig { float: right; width: 44%; margin: 4px 0 8px 28px; }
+  .research-fig img { display: block; width: 100%; height: auto; border: 0; mix-blend-mode: multiply; }
+  .research-area { font-size: 15px; font-weight: bold; margin: 14px 0 4px 0; }
+  .research-clear { clear: both; }
+  @media (max-width: 768px) {
+    .research-fig { float: none; width: 100%; margin: 0 0 16px 0; }
+  }
+</style>
+<div class="span12" id="ResearchOverview">
+<h4>Research</h4>
+<hr>
+<div class="research-fig">
+  <a href="images/research_overview.png" target="_blank" title="Click to enlarge"><img src="images/research_overview.png" alt="Overview of research areas in reliability-aware autonomy" /></a>
+</div>
+<p align="justify">
+My work draws on state estimation, observability analysis, uncertainty quantification, and
+learning-based perception, and is applied to teams of drones, mobile manipulators, and humanoid
+robots. It currently follows three directions.
+</p>
+<p class="research-area">Geometric observability and multi-robot sensing</p>
+<p align="justify">
+How well a team of drones or robots can estimate what it is tracking depends on where the
+sensors are, not only on how good they are. I study how sensor geometry limits what a team can
+infer, and how robots can position themselves to observe better. A related application uses this
+geometry to plan ground control points for drone mapping and 3D reconstruction.
+</p>
+<p class="research-area">Uncertainty-aware manipulation and stability</p>
+<p align="justify">
+For mobile manipulators and humanoids, a safety margin is only useful if it reflects what the
+robot actually knows. I study how uncertainty in position, payload, and terrain affects whether a
+robot stays stable, and how stability margins can be tested rather than assumed.
+</p>
+<p class="research-area">Reliable perception under changing conditions</p>
+<p align="justify">
+Learned perception models and sensors behave differently as lighting, weather, and data change.
+I study how to detect when a sensor or model is no longer reliable, how to check the confidence a
+model reports, and how uncertainty can guide where to look next. This direction also includes
+applied work on infrastructure inspection and on combining data from different sources.
+</p>
+<p class="research-area">Earlier work</p>
+<p align="justify">
+<b>Multi-agent navigation and planning (Ph.D., UC Merced).</b> My Ph.D. research with <a href="https://mkallmann.github.io/" target="_blank">Dr. Marcelo
+Kallmann</a> developed navigation structures built on Shortest Path Maps, which partition free
+space by the shortest route to a goal. I extended them to let groups of agents move in formation
+through narrow corridors, to compute and analyze the decision boundaries where the best route
+changes, and to plan spatially distributed lanes for navigation in 3D environments. I also worked
+on local collision avoidance and 3D multi-agent behaviors using position-based dynamics.
+</p>
+<p align="justify">
+<b>Industry research.</b> At Amazon Robotics, I worked on path planning for warehouse robots in the
+presence of uncertain obstacles. At PARC, I developed methods that turn scanned building meshes into
+clean floor plans and 3D models, work that led to a patent application. At Dolby, I worked on 3D
+reconstruction and scene representation.
+</p>
+<p align="justify">
+<b>Visualization and geometry (M.S., Oregon State).</b> With <a href="https://web.engr.oregonstate.edu/~zhange/" target="_blank">Dr. Eugene Zhang</a>, I studied the
+topology of 3D symmetric tensor fields, including feature surfaces and transition points, and
+contributed to the design and automatic layout of origin&ndash;destination flow maps.
+</p>
+<p align="justify">
+This background in geometry, multi-agent planning, and spatial reasoning shapes how I approach
+sensing and decision-making in robot teams today.
+</p>
+<div class="research-clear"></div>
+<hr>
+</div>
+<!-- ===== END RESEARCH OVERVIEW ===== -->
 
 <div class="span12">
 <h4>News</h4>
@@ -293,7 +364,7 @@ PARC (Xerox), and Passur Aerospace.
 	<tr><td>09.17.2024</td><td> Paper titled "Benchmarking YOLOv8 for Optimal Crack Detection in Civil Infrastructure" is accepted for publication at 104th Transportation Research Board Annual Meeting, 2025.</td></tr> 
 	<tr><td>01.01.2024</td><td>Joined as Postdoctoral Fellow at the Center for Intelligent Infrastructure in Missouri University of Science & Technology.</td></tr>
 	<tr><td>11.22.2023</td><td>Paper titled "Formation-Aware Planning and Navigation with Corridor Shortest Path Maps" is accepted for publication at CGF Journal.</td></tr>
-	<tr><td>11.03.2023</td><td>Sucessfully defended my thesis research on "Navigation Structures for Flows, Formations and Decision Making".</td></tr>
+	<tr><td>11.03.2023</td><td>Successfully defended my thesis research on "Navigation Structures for Flows, Formations and Decision Making".</td></tr>
 	<tr><td>10.12.2023</td><td>US Patent titled "System and method for automatic floorplan generation" is now published.</td></tr>
 	<tr><td>10.11.2023</td><td>Paper titled "Computing and Analyzing Decision Boundaries from Shortest Path Maps" is accepted for publication at Computer & Graphics Journal.</td></tr>
 	<tr><td>06.15.2023</td><td>One of my collaborative work is now accepted as a full paper at Building Simulation 2023 proceedings.</td></tr>
@@ -302,7 +373,7 @@ PARC (Xerox), and Passur Aerospace.
 	<tr><td>05.02.2023</td><td>Paper titled "Spatially Distributed Lane Planning for Navigation in 3D Environments" is accepted for publication at CAVW Journal.</td></tr>
 	<tr><td>04.01.2023</td><td>Paper titled "Spatially Distributed Lane Planning for Navigation in 3D Environments" is conditionally accepted at CASA, 2023.</td></tr>
 	<tr><td>09.10.2022</td><td>Paper titled "Structure-Preserving Editing of Plates and Volumes for Laser Cutting" was accepted for publication at ACM SCF, 2022</td></tr>
-	<tr><td>04.25.2022</td><td>Joined as an intern at Dolby Laboratories Inc. to work on topics related to 3D reconstuction for video</td></tr>
+	<tr><td>04.25.2022</td><td>Joined as an intern at Dolby Laboratories Inc. to work on topics related to 3D reconstruction for video</td></tr>
 	<tr><td>04.29.2022</td><td>Passed my PhD Thesis proposal and I am a PhD candidate now</td></tr>
 	<tr><td><hr></td><td><hr></td></tr>
 	<tr><td>04.15.2022</td><td>Presented research on Navigation Structures for Flows, Formations and Decision Boundaries at UC Merced EECS Seminar 2022</td></tr> 
@@ -377,7 +448,7 @@ PARC (Xerox), and Passur Aerospace.
 	</td>
 	<td>
 			<p align="justify" style="font-size:14px">
-			<b>Doctor of Philosophy</b> in <b>Computer Science</b>, <br>
+			<b>Doctor of Philosophy</b> in <b>Electrical Engineering and Computer Science</b>, <br>
 			<b>University of California</b> Merced, California, United States<br>
 			<!--Specialization: Computer Graphics and Animation<br>
 			Advisor: Marcelo Kallmann<br> -->
@@ -407,7 +478,7 @@ PARC (Xerox), and Passur Aerospace.
 			<p align="justify" style="font-size:14px">
 			<b>Bachelor of Technology</b> in <b>Computer Science and Engineering</b>, <br>
 			<b>Siliguri Institute of Technology</b>, <br>
-			</b>West Bengal University of Technology</b>, West Bengal, India<br>
+			West Bengal University of Technology</b>, West Bengal, India<br>
 			<!--Specialization: Computer Science and Engineering<br>  -->
 			August 2006 - June 2010<br>
 			</p>
@@ -605,7 +676,7 @@ of Hyperspectral Scene</a></p></tr>
 		<tr><p align="justify" style="font-size:18px"><a target="blank" href="https://doi.org/10.1016/j.cag.2023.10.006">Computing and Analyzing Decision Boundaries from Shortest Path Maps</a></p></tr>
 		<tr>
 			<p align="justify" style="font-size:12px"><b>Ritesh Sharma</b> and Marcelo Kallmann<br>
-			Computer & Graphics 2023<br>	
+			Computers &amp; Graphics 2023<br>	
 			[To Appear at the 17th Annual ACM SIGGRAPH Conference on Motion, Interaction and Games (MIG) 2024]<br>
 			[<a target="_blank" href="https://doi.org/10.1016/j.cag.2023.10.006">Paper</a>]</p>
 			</tr>
@@ -724,7 +795,7 @@ of Hyperspectral Scene</a></p></tr>
 		<tr><p align="justify" style="font-size:18px"><a target="blank" href="http://dx.doi.org/10.1080/13658816.2017.1307378">Force-directed layout of origin-destination flow maps</a></p></tr>
 		<tr>
 			<p align="justify" style="font-size:12px">Bernhard Jenny, Daniel M. Stephen, Ian Muehlenhaus, Brooke E. Marston, <b>Ritesh Sharma</b>, Eugene Zhang, Helen Jenny<br>
-			Internaional Journal of Geographical Information Science (IJGIS), 2017<br>
+			International Journal of Geographical Information Science (IJGIS), 2017<br>
 			[<a target="_blank" href="http://dx.doi.org/10.1080/13658816.2017.1307378">Paper</a>]</p>
 		</tr>
 		</table>
@@ -734,7 +805,7 @@ of Hyperspectral Scene</a></p></tr>
 		<td><img src="images/tranistionPoint.jpg" width="150px" height="150px"  /></td>
 		<td>
 		<table border ="0">
-		<tr><p align="justify" style="font-size:18px"><a target="blank" href="https://link.springer.com/chapter/10.1007/978-3-030-43036-8_15">Maximum Number of transition points in a 3D Linear Symmetric Tensor Fields</a></p></tr>
+		<tr><p align="justify" style="font-size:18px"><a target="blank" href="https://link.springer.com/chapter/10.1007/978-3-030-43036-8_15">Maximum Number of Transition Points in 3D Linear Symmetric Tensor Fields</a></p></tr>
 		<tr>
 			<p align="justify" style="font-size:12px">Yue Zhang, Lawrence Roy, <b>Ritesh Sharma</b>, Eugene Zhang<br>
 			Topology Based Methods in Visualization (TopoInVis) 2017<br>
@@ -778,7 +849,7 @@ of Hyperspectral Scene</a></p></tr>
 		<tr><p align="justify" style="font-size:18px"><a target="blank" href="./AGU_2015_3DVis_poster.jpg">3D visualization of global ocean circulation</a></p></tr>
 		<tr>
 			<p align="justify" style="font-size:12px">Victoria Nelson, <b>Ritesh Sharma</b>, Eugene Zhang, Andreas Schmittner, Bernhard Jenny<br>
-			AGU Fall Meeting, San Fransisco, CA, Dec 18, 2015</p>
+			AGU Fall Meeting, San Francisco, CA, Dec 18, 2015</p>
 		</tr>
 		</table>
 		</td>   
@@ -816,13 +887,13 @@ of Hyperspectral Scene</a></p></tr>
 <h3>Patent</h3>
 <hr>
 <p><a target="blank" href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=B2PYJb0AAAAJ&sortby=pubdate&citation_for_view=B2PYJb0AAAAJ:9ZlFYXVOiuMC">System and Method for Automatic Floorplan Generation</a><br>
-Inventor: Eric A. Bier & <b>Ritesh Sharma</b><br>
+Inventors: Eric A. Bier and <b>Ritesh Sharma</b><br>
 US Patent App. 18/297,506</p>
 <p><a target="blank" href="">Geometry-aware uncertainty calibration for cooperative multi-UAV tracking via GDOP-adaptive EKF noise scheduling.</a><br>
-Inventor: <b>Ritesh Sharma</b> Yuichi Motai<br> 
-US Patent App.  64/039,821</p>
+Inventors: <b>Ritesh Sharma</b> and Yuichi Motai<br> 
+US Patent App. 64/039,821</p>
 <p><a target="blank" href="">End-to-end GDOP-based framework for predictive GCP optimization and quality assessment in UAV photogrammetry.</a><br>
-Inventor: <b>Ritesh Sharma</b> Neha Sharma, Shreyas Harish, Colin Drake and Yuchi Motai<br>
+Inventors: <b>Ritesh Sharma</b>, Neha Sharma, Shreyas Harish, Colin Drake and Yuichi Motai<br>
 US Patent App. 64/070,245</p>
 	
 <br><br>
@@ -893,7 +964,7 @@ at Wolfram Research Inc. in their Mathematica Algorithm R&D department.</p>
 <h4>Unsignalized T-intersection Simulation</h4>
 <hr>
 <p align='justify'>In this project, I worked under the supervision of <a href='https://www.civil.iitb.ac.in/~gpatil/' target="_blank">Professor Gopal R. Patil</a>) created a simulation to showcase the actual movement of vehicle on an unsignalized T-Intersection
-using Cellular Automata technique. This simulaton serves the purpose of training student (pursuing transportation engineering) for an 
+using Cellular Automata technique. This simulation serves the purpose of training student (pursuing transportation engineering) for an 
 actual survey or data collection. </p>
 <table border="0">
   <tr>
@@ -994,7 +1065,7 @@ actual survey or data collection. </p>
 			<b>Research Scientist</b><br>
 			<b>Department of Electrical and Computer Engineering</b><br>
 			<a target="_blank" href="https://www.vcu.edu/">Virginia Commonwealth University</a>, Richmond, Virginia<br>
-			Description: Research emphasis on Uncertainity Quantification, Robotics, AI/ML and 3D reconstruction <br>
+			Description: Research emphasis on Uncertainty Quantification, Robotics, AI/ML and 3D reconstruction <br>
 			<!-- Mentor: <a target="blank" href="">Dr. Rose Gamble</a> <br> -->
 			</p>
 	</td>
@@ -1024,7 +1095,7 @@ actual survey or data collection. </p>
 			<b>Postdoctoral Fellow</b><br>
 			<b>Center for Intelligent Infrastructure</b><br>
 			<a target="_blank" href="https://www.mst.edu/">Missouri University of Science and Technology</a>, Rolla, Missouri<br>
-			Description: Investigated topic related to 3D reconstruction, AI driven robotics and intelligent infrastructure inspection.<br>
+			Description: Investigated topics related to 3D reconstruction, AI driven robotics and intelligent infrastructure inspection.<br>
 			Mentor: <a target="blank" href="https://web.mst.edu/gchen/">Dr. Genda Chen</a> <br>
 			</p>
 	</td>
@@ -1040,7 +1111,7 @@ actual survey or data collection. </p>
 			<b>Applied Scientist II Co-op</b><br>
 			<b>Path Planning and Navigation</b><br>
 			<a target="_blank" href="https://amazon.jobs/en/teams/amazon-robotics">Amazon Robotics</a>, Westborough, Massachusetts<br>
-			Description: Investigated topic related to path planning for warehouse robots considering uncertain obstacles.<br>
+			Description: Investigated topics related to path planning for warehouse robots considering uncertain obstacles.<br>
 			Mentor: <a target="blank" href="http://graphics.ucmerced.edu/~mkallmann/">Dr. Marcelo Kallmann</a> <br>
 			Manager: <a target="blank" href="">Sowmya Kompella</a>
 			</p>
@@ -1101,7 +1172,7 @@ actual survey or data collection. </p>
 			<b>PhD Researcher(Intern)</b>, <br>
 			<b>Human Computer Interaction Lab</b><br>
 			<a target="_blank" href="https://hpi.de/en/index.html">Hasso-Plattner Institute</a>, Potsdam, Germany<br>
-			Description: Investigating on geometry interaction related to laser cutting.<br>
+			Description: Investigating geometry interaction related to laser cutting.<br>
 			Advisor: <a target="blank" href="https://hpi.de/baudisch/people.html">Professor Patrick Baudisch</a>
 			</p>
 	</td>
@@ -1165,7 +1236,7 @@ actual survey or data collection. </p>
 	Intern, Mathematica Algorithm R&D<br>
 	<a target="_blank" href="https://www.wolfram.com/company/">Wolfram Research Inc.</a>, Champaign, Illinois, USA<br>
 	Description: Developed software package to connect Wolfram's Mathematica with Pixar's Renderman,Software package testing for geometry primitives, plot functions and other functionalities used for 3D Printing.<br>
-	Manager: <a href='https://www.linkedin.com/in/charles-pooh-1794856/' target='_blank'>Dr. Charles Pooh</a>, Manager, Discrete Compuatation, Wolfram Research Inc, USA
+	Manager: <a href='https://www.linkedin.com/in/charles-pooh-1794856/' target='_blank'>Dr. Charles Pooh</a>, Manager, Discrete Computation, Wolfram Research Inc, USA
 	</p>
 	</td>
     </tr>
@@ -1182,7 +1253,7 @@ January 2014 - March 2016<br>
 Graduate Teaching Assistant, <br>
 School of Electrical Engineering and Computer Science<br>
 Oregon State University, Corvallis, Oregon<br>
-Courses:Analysis of Algorithm(CS 325), Introduction to Databases(CS 340),Opertaing Systems I(CS 344) and Translators(CS 480)
+Courses:Analysis of Algorithms (CS 325), Introduction to Databases(CS 340),Operating Systems I(CS 344) and Translators(CS 480)
 <br><br>
 August 2021<br>
 Teaching Assistant, <br>
@@ -1206,7 +1277,7 @@ Organized by Massachusetts Institute of Technology<br>
 <h4>Research/Seminar/Invited Lecture Talks</h4>
   <ul>
 	<li>
-      <span class="topic"><i>Geometric Spatial Intelligence:Algorithms for Navigation,Sensing and Interaction</i></span>,
+      <span class="topic"><i>Geometric Spatial Intelligence: Algorithms for Navigation, Sensing and Interaction</i></span>,
        <span class="where">Hofstra University, NY</span>, <time datetime="2026-03">March 2026</time>.
     </li>
 	<li>
@@ -1248,7 +1319,7 @@ Organized by Massachusetts Institute of Technology<br>
 <br>
 <h4>Conference Program Committee Member</h4>
 <ul>
-<li><i> 40th AAAI Conference on Artificial Intelligence, (AAAAI 2026)</li>
+<li><i> 40th AAAI Conference on Artificial Intelligence, (AAAI 2026)</li>
 </ul>
 <br>
 <br>
@@ -1289,8 +1360,8 @@ Organized by Massachusetts Institute of Technology<br>
 <li><p align="justify">Poster Presentation on Mode Surface Extraction Using A-Patches at Engineering Research Expo held at Oregon Convention Center, Portland, Oregon, Mar 4, 2015.</p></li>
 <li><p align="justify">Active member of technical and scientific committee in the International conference for Transportation Planning and Methodologies for Developing Countries(TPMDC), 2012 at IIT Bombay.</p></li>
 <li><p align="justify">Active member of organising committee in National Conference, InTranSe 2011, Conducted by CDAC, Trivandrum at IIT Bombay.</p></li>
-<li><p align="justify">Awarded a certificate of merit by Howrah Municipal Corporation for securing highest marks in Secondary School Examination in the entire ward(a small divsion of a city).</p></li>
-<li><p align="justify">Lead the school quiz team upto top 8 schools in the QUEST, a Science Quiz competition conducted by Birla Industrial & Technological Museum, Kolkata.</p></li>
+<li><p align="justify">Awarded a certificate of merit by Howrah Municipal Corporation for securing highest marks in Secondary School Examination in the entire ward(a small division of a city).</p></li>
+<li><p align="justify">Led the school quiz team upto top 8 schools in the QUEST, a Science Quiz competition conducted by Birla Industrial & Technological Museum, Kolkata.</p></li>
 <li><p align="justify">Won 2nd position in the Kolkata chapter of All Bengal SPELLinc Competition, 2003 and led team to Grand Finale of All Bengal SPELLinc Competition, 2003.</p></li>
 <li><p align="justify">Won 2nd position in the Quiz Contests conducted by Society of Human Growth, Kolkata and Salkia Bharat Sangha, Howrah in the year, 2002.</p></li>
 <li><p align="justify">Won 3rd position in the Drawing competition conducted by Kolkata Traffic Police during Road Safety Week, 2001.</p></li>
